@@ -13,6 +13,7 @@
 
 const READINGS_KEY = "readings";
 const DURATION_KEY = "alertDurationSeconds";
+const SOUND_KEY = "soundChoice";
 const DEFAULT_DURATION = 20;
 const MIN_DURATION = 0; // 0 keeps the alert window open until the next alert
 const MAX_DURATION = 300;
@@ -109,6 +110,38 @@ async function initDuration() {
   });
 }
 
+const soundSelect = document.getElementById("sound");
+const SOUND_FILES = {
+  bell: "sounds/bell.mp3",
+  ding: "sounds/ding.mp3",
+  dong: "sounds/dong.mp3",
+  zingz: "sounds/zingz.mp3"
+};
+
+/* Plays a short preview of a sound choice ("none" plays nothing). */
+function previewSound(choice) {
+  const file = SOUND_FILES[choice];
+  if (!file) {
+    return;
+  }
+  try {
+    new Audio(browser.runtime.getURL(file)).play().catch(() => {});
+  } catch (error) {
+    /* Ignore preview playback errors. */
+  }
+}
+
+/* Loads the sound choice, saves it on change, and previews the new choice. */
+async function initSound() {
+  const stored = await browser.storage.local.get(SOUND_KEY);
+  soundSelect.value = stored[SOUND_KEY] || "none";
+
+  soundSelect.addEventListener("change", () => {
+    browser.storage.local.set({ [SOUND_KEY]: soundSelect.value });
+    previewSound(soundSelect.value);
+  });
+}
+
 /* Replaces the text of every [data-i18n] element with its localized message. */
 function applyTranslations() {
   const nodes = document.querySelectorAll("[data-i18n]");
@@ -130,3 +163,4 @@ browser.storage.onChanged.addListener((changes, area) => {
 applyTranslations();
 render();
 initDuration();
+initSound();

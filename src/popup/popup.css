@@ -170,6 +170,25 @@ button:hover {
   border-color: var(--accent);
 }
 
+.sound-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sound-select {
+  padding: 6px 8px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.sound-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .hint {
   margin: 10px 0 0;
   color: var(--muted);

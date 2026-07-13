@@ -21,6 +21,13 @@
   const ALERT_WIDTH = 360;
   const ALERT_HEIGHT = 340;
   const SCREEN_MARGIN = 24;
+  const SOUND_KEY = "soundChoice";
+  const SOUND_FILES = {
+    bell: "sounds/bell.mp3",
+    ding: "sounds/ding.mp3",
+    dong: "sounds/dong.mp3",
+    zingz: "sounds/zingz.mp3"
+  };
 
   /* Id of the currently open alert window, or null. */
   let alertWindowId = null;
@@ -49,11 +56,28 @@
     }
   }
 
+  /* Plays the chosen alert sound, or nothing when set to silence. */
+  async function playSelectedSound() {
+    const stored = await browser.storage.local.get(SOUND_KEY);
+    const file = SOUND_FILES[stored[SOUND_KEY]];
+    if (!file) {
+      return;
+    }
+    try {
+      const audio = new Audio(browser.runtime.getURL(file));
+      await audio.play();
+    } catch (error) {
+      // A missing sound file or a blocked play must not break the alert.
+    }
+  }
+
   /*
    * Shows the given meters. meters is an array of display-ready objects:
    * { label, percentText, reset }.
    */
   async function show(meters) {
+    playSelectedSound();
+
     // The timestamp guarantees the alert page sees a change and resets its
     // countdown, even when the same meters cross again.
     await browser.storage.local.set({

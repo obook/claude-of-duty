@@ -47,6 +47,24 @@
   "popupDurationLabel": {
     "message": "Alert duration (s, 0 = keep open)"
   },
+  "popupSoundLabel": {
+    "message": "Alert sound"
+  },
+  "soundNone": {
+    "message": "Silence"
+  },
+  "soundBell": {
+    "message": "Bell"
+  },
+  "soundDing": {
+    "message": "Ding"
+  },
+  "soundDong": {
+    "message": "Dong"
+  },
+  "soundZingz": {
+    "message": "Zingz"
+  },
   "alertTitle": {
     "message": "Usage alert"
   },
