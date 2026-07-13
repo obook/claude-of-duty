@@ -83,14 +83,15 @@ and rolls it out to installed copies.
 To publish a new version:
 
 1. Bump `"version"` in `src/manifest.json` (for example `1.0.1`).
-2. Commit, then tag and push the tag:
+2. Move the `Unreleased` notes in `CHANGELOG.md` under the new version.
+3. Commit, then tag and push the tag:
 
    ```bash
    git tag v1.0.1
    git push origin v1.0.1
    ```
 
-3. The `Release to AMO` workflow submits the new version. After review, Firefox
+4. The `Release to AMO` workflow submits the new version. After review, Firefox
    rolls it out on its own.
 
 That workflow needs two repository secrets, taken from your AMO API credentials
