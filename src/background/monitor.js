@@ -146,6 +146,10 @@
   window.ClaudeOfDuty = window.ClaudeOfDuty || {};
   window.ClaudeOfDuty.monitor = {
     processReadings: processReadings,
-    showCurrentReadings: showCurrentReadings
+    showCurrentReadings: showCurrentReadings,
+    // Exposed so the unit tests can exercise the pure helpers.
+    bucketOf: bucketOf,
+    formatPercent: formatPercent,
+    formatReset: formatReset
   };
 })();

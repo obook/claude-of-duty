@@ -108,11 +108,18 @@
     return null;
   }
 
-  /* Extracts the watched meters from a raw usage payload. */
+  /*
+   * Extracts the watched meters from a raw usage payload. Two guards log a
+   * warning if the response no longer looks the way we expect, which is the
+   * likely symptom of an API change.
+   */
   function readingsFromUsage(usage) {
-    const limits = usage && Array.isArray(usage.limits) ? usage.limits : [];
+    if (!usage || !Array.isArray(usage.limits)) {
+      console.warn("[Claude of Duty] Unexpected usage response: no \"limits\" array. The API may have changed.");
+      return [];
+    }
     const readings = [];
-    for (const limit of limits) {
+    for (const limit of usage.limits) {
       const meter = meterFromLimit(limit);
       if (meter && typeof limit.percent === "number") {
         readings.push({
@@ -122,6 +129,9 @@
           resetsAt: limit.resets_at || null
         });
       }
+    }
+    if (usage.limits.length > 0 && readings.length === 0) {
+      console.warn("[Claude of Duty] Usage response had limits but none matched a known kind. The API may have changed.");
     }
     return readings;
   }
@@ -149,5 +159,10 @@
   }
 
   window.ClaudeOfDuty = window.ClaudeOfDuty || {};
-  window.ClaudeOfDuty.usageApi = { fetchUsageReadings: fetchUsageReadings };
+  window.ClaudeOfDuty.usageApi = {
+    fetchUsageReadings: fetchUsageReadings,
+    // Exposed so the unit tests can exercise the pure parsing helpers.
+    readingsFromUsage: readingsFromUsage,
+    meterFromLimit: meterFromLimit
+  };
 })();

@@ -101,6 +101,19 @@ That workflow needs two repository secrets, taken from your AMO API credentials
 
 `web-ext lint`, the same linter AMO uses, runs on every push.
 
+## Tests
+
+Run the unit tests with Node, no dependencies needed:
+
+```bash
+./tests/run-all.sh
+```
+
+They cover the usage parsing, the meter mapping (including the scoped model),
+the reset formatting, and the bucket logic. `readingsFromUsage` also warns in
+the console if the API response stops looking the way it expects, which is the
+usual sign of an API change.
+
 ## Localization
 
 The interface and alerts are available in English and French, following your
