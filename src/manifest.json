@@ -8,7 +8,6 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "claude-of-duty@free.fr",
-      "update_url": "https://raw.githubusercontent.com/obook/claude-of-duty/main/updates.json",
       "strict_min_version": "128.0",
       "data_collection_permissions": {
         "required": ["none"]
