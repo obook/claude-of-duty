@@ -19,12 +19,15 @@
     "https://claude.ai/*"
   ],
   "icons": {
-    "48": "icons/icon.svg",
-    "96": "icons/icon.svg",
-    "128": "icons/icon.svg"
+    "32": "icons/icon-32.png",
+    "64": "icons/icon-64.png",
+    "128": "icons/icon-128.png"
   },
   "browser_action": {
-    "default_icon": "icons/icon.svg",
+    "default_icon": {
+      "32": "icons/icon-32.png",
+      "64": "icons/icon-64.png"
+    },
     "default_popup": "popup/popup.html",
     "default_title": "Claude of Duty"
   },

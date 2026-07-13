@@ -100,7 +100,7 @@
   function showNotification(key, title, body) {
     browser.notifications.create(NOTIFICATION_ID_PREFIX + key, {
       type: "basic",
-      iconUrl: browser.runtime.getURL("icons/icon.svg"),
+      iconUrl: browser.runtime.getURL("icons/icon-128.png"),
       title: title,
       message: body || ""
     });
