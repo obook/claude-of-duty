@@ -83,19 +83,32 @@ function updateCountdown(seconds) {
   countdownEl.textContent = browser.i18n.getMessage("alertCloseIn", [String(seconds)]);
 }
 
-/* Counts down from the configured duration and closes the window at zero. */
+/*
+ * Counts down from the configured duration and closes the window at zero.
+ * A duration of 0 means the window stays open until it is closed by hand or
+ * replaced by the next alert.
+ */
 async function startCountdown() {
   const stored = await browser.storage.local.get(DURATION_KEY);
-  let remaining = typeof stored[DURATION_KEY] === "number" ? stored[DURATION_KEY] : DEFAULT_DURATION;
+  const duration = typeof stored[DURATION_KEY] === "number" ? stored[DURATION_KEY] : DEFAULT_DURATION;
 
   if (countdownTimer !== null) {
     clearInterval(countdownTimer);
+    countdownTimer = null;
   }
+
+  if (duration <= 0) {
+    countdownEl.textContent = browser.i18n.getMessage("alertPersistent");
+    return;
+  }
+
+  let remaining = duration;
   updateCountdown(remaining);
   countdownTimer = setInterval(() => {
     remaining -= 1;
     if (remaining <= 0) {
       clearInterval(countdownTimer);
+      countdownTimer = null;
       window.close();
       return;
     }

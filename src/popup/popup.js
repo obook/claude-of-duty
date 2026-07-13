@@ -14,7 +14,7 @@
 const READINGS_KEY = "readings";
 const DURATION_KEY = "alertDurationSeconds";
 const DEFAULT_DURATION = 20;
-const MIN_DURATION = 3;
+const MIN_DURATION = 0; // 0 keeps the alert window open until the next alert
 const MAX_DURATION = 300;
 
 /* Preferred display order; any scoped-model meters are appended after these. */

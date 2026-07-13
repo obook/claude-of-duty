@@ -45,7 +45,7 @@
     "message": "Alerts fire every 5% on the session and weekly limits."
   },
   "popupDurationLabel": {
-    "message": "Alert duration (s)"
+    "message": "Alert duration (s, 0 = keep open)"
   },
   "alertTitle": {
     "message": "Usage alert"
@@ -58,5 +58,8 @@
     "placeholders": {
       "seconds": { "content": "$1" }
     }
+  },
+  "alertPersistent": {
+    "message": "Stays open until the next alert"
   }
 }

@@ -45,7 +45,7 @@
     "message": "Une alerte à chaque palier de 5 % sur la session et les limites hebdomadaires."
   },
   "popupDurationLabel": {
-    "message": "Durée de l'alerte (s)"
+    "message": "Durée de l'alerte (s, 0 = reste ouverte)"
   },
   "alertTitle": {
     "message": "Alerte d'usage"
@@ -58,5 +58,8 @@
     "placeholders": {
       "seconds": { "content": "$1" }
     }
+  },
+  "alertPersistent": {
+    "message": "Reste ouverte jusqu'à la prochaine alerte"
   }
 }
