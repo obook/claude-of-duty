@@ -106,9 +106,38 @@
     });
   }
 
+  // Firefox notifications cannot show a native progress bar (that is a
+  // Chrome-only feature), so we draw one with block characters in the body.
+  // Each of the BAR_CELLS cells is filled in eighths for a smooth edge, with a
+  // half-block cap on each side.
+  const BAR_CELLS = 10;
+  const BAR_FULL = "█"; // full block
+  const BAR_EMPTY = "░"; // light shade
+  const BAR_CAP_LEFT = "▐"; // right half block, used as the left cap
+  const BAR_CAP_RIGHT = "▌"; // left half block, used as the right cap
+  const BAR_EIGHTHS = ["", "▏", "▎", "▍", "▌", "▋", "▊", "▉"];
+
+  /* Builds a fractional block-character progress bar for a percentage. */
+  function progressBar(percent) {
+    const clamped = Math.max(0, Math.min(100, percent));
+    const totalEighths = Math.round((clamped / 100) * BAR_CELLS * 8);
+    const fullCells = Math.floor(totalEighths / 8);
+    const remainder = totalEighths % 8;
+
+    let cells = BAR_FULL.repeat(fullCells);
+    if (remainder > 0) {
+      cells += BAR_EIGHTHS[remainder];
+    }
+    const usedCells = fullCells + (remainder > 0 ? 1 : 0);
+    cells += BAR_EMPTY.repeat(BAR_CELLS - usedCells);
+
+    return BAR_CAP_LEFT + cells + BAR_CAP_RIGHT;
+  }
+
   function notifyReading(reading) {
     const title = browser.i18n.getMessage("meterTitle", [reading.label, formatPercent(reading.percent)]);
-    showNotification(reading.key, title, formatReset(reading.resetsAt));
+    const body = progressBar(reading.percent) + "\n" + formatReset(reading.resetsAt);
+    showNotification(reading.key, title, body);
   }
 
   // ===============================================================
@@ -148,7 +177,8 @@
     for (const key of Object.keys(readings)) {
       const reading = readings[key];
       const title = browser.i18n.getMessage("meterTitle", [reading.label, reading.percentText]);
-      showNotification(key, title, reading.reset);
+      const body = progressBar(Number(reading.percentText)) + "\n" + reading.reset;
+      showNotification(key, title, body);
     }
   }
 
