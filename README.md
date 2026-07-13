@@ -6,6 +6,13 @@ at every 5% step, so you know a limit is coming before you hit it.
 It reads your usage from Claude's own API using your signed-in session, so it
 works in the background. You do not need to keep the usage page open.
 
+> [!IMPORTANT]
+> **Claude of Duty never knows your Claude login details.** There is no login
+> form, and the extension never reads, stores, or sends your password or your
+> session token. It relies only on the session cookie your browser already
+> holds and attaches to requests on its own. That cookie is `httpOnly`, so no
+> script, this extension included, can even read its value.
+
 ![The Claude of Duty popup](media/popup.png)
 
 ## What it watches
@@ -51,11 +58,21 @@ it resets:
 
 The alert window uses `browser.windows`, which needs no permission.
 
-## Privacy
+## Privacy and security
 
-The extension only talks to `claude.ai`, with your own session, to read your
-own usage. Nothing is sent anywhere else, and it collects no analytics or
-telemetry. All state stays in local storage.
+Your Claude credentials never pass through the extension.
+
+| Question | Answer |
+| --- | --- |
+| Does it ask for or store your password? | Never. There is no login form anywhere in the extension. |
+| Can it read your session token? | No. The session cookie is `httpOnly`, so it is invisible to every script, including this one. |
+| How does it authenticate then? | Like the Claude website itself: the browser attaches your existing cookie automatically (`credentials: "include"`). The code never touches the cookie value. |
+| Where does your usage data go? | Nowhere. It stays in your browser's local storage. |
+| Does it contact any other server? | No. It only ever talks to `claude.ai`. |
+| Analytics or telemetry? | None. |
+
+The full source is in this repository under the MIT licence, so you can check
+exactly what it does.
 
 ## Localization
 
