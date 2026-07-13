@@ -155,14 +155,14 @@ button:hover {
 }
 
 .duration-input {
-  width: 64px;
+  width: 76px;
+  flex-shrink: 0;
   padding: 6px 8px;
   font: inherit;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  text-align: right;
 }
 
 .duration-input:focus {
@@ -176,6 +176,7 @@ button:hover {
 }
 
 .sound-select {
+  flex-shrink: 0;
   padding: 6px 8px;
   font: inherit;
   color: var(--text);

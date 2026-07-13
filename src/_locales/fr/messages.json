@@ -42,10 +42,10 @@
     "message": "Tester l'alerte"
   },
   "popupHint": {
-    "message": "Une alerte à chaque palier de 5 % sur la session et les limites hebdomadaires."
+    "message": "Une alerte à chaque palier de 5 %. Durée à 0 pour garder la fenêtre ouverte."
   },
   "popupDurationLabel": {
-    "message": "Durée de l'alerte (s, 0 = reste ouverte)"
+    "message": "Durée de l'alerte (s)"
   },
   "popupSoundLabel": {
     "message": "Son de l'alerte"
