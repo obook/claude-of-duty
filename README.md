@@ -74,6 +74,33 @@ Your Claude credentials never pass through the extension.
 The full source is in this repository under the MIT licence, so you can check
 exactly what it does.
 
+## Releasing and updates
+
+Once the add-on is listed on addons.mozilla.org (AMO), Firefox updates it
+automatically. There is no `update_url` to manage: Mozilla hosts every version
+and rolls it out to installed copies.
+
+To publish a new version:
+
+1. Bump `"version"` in `src/manifest.json` (for example `1.0.1`).
+2. Commit, then tag and push the tag:
+
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+3. The `Release to AMO` workflow submits the new version. After review, Firefox
+   rolls it out on its own.
+
+That workflow needs two repository secrets, taken from your AMO API credentials
+(addons.mozilla.org, Tools, Manage API Keys):
+
+- `AMO_JWT_ISSUER`
+- `AMO_JWT_SECRET`
+
+`web-ext lint`, the same linter AMO uses, runs on every push.
+
 ## Localization
 
 The interface and alerts are available in English and French, following your

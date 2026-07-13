@@ -1,0 +1,42 @@
+name: Release to AMO
+
+# On a version tag (for example v1.0.1), submits the extension to
+# addons.mozilla.org. Once listed and reviewed, Firefox updates installed
+# copies on its own, so no update_url or updates.json is needed.
+#
+# Required repository secrets (Settings, Secrets and variables, Actions):
+#   AMO_JWT_ISSUER  - the JWT issuer from your AMO API credentials
+#   AMO_JWT_SECRET  - the JWT secret from your AMO API credentials
+# Create them at addons.mozilla.org, Tools, Manage API Keys.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check that the tag matches the manifest version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(node -p "require('./src/manifest.json').version")"
+          if [ "$tag" != "$version" ]; then
+            echo "Tag $tag does not match manifest version $version."
+            exit 1
+          fi
+
+      - name: Submit to AMO (listed channel)
+        run: >
+          npx --yes web-ext sign
+          --channel listed
+          --approval-timeout 0
+          --source-dir src
+          --api-key "${{ secrets.AMO_JWT_ISSUER }}"
+          --api-secret "${{ secrets.AMO_JWT_SECRET }}"
