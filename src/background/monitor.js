@@ -1,16 +1,15 @@
 /*
  * monitor.js
- * Threshold logic and notifications, run in the background page.
+ * Threshold logic, run in the background page.
  *
- * For each meter we remember the last 5% "bucket" we notified about
- * (0, 5, 10 ...). A fresh reading in a higher bucket means the user crossed a
- * step; a lower bucket means the limit was reset. Both are worth a
- * notification. The first time a meter is ever seen we only store the
- * baseline, so nothing fires until something actually changes.
+ * For each meter we remember the last 5% "bucket" we alerted on (0, 5, 10 ...).
+ * A fresh reading in a different bucket (up when usage climbs, down when the
+ * limit resets) is worth an alert. The first time a meter is ever seen we only
+ * store the baseline, so nothing fires until something actually changes.
  *
- * Readings are also mirrored to storage so the popup can show current values.
- *
- * The public API is exposed on window.ClaudeOfDuty.monitor.
+ * When one or more meters cross a step in the same poll, they are shown
+ * together in a single persistent popup window (see alert-window.js). Readings
+ * are also mirrored to storage so the toolbar popup can show current values.
  *
  * Author: øbook
  * Date: July 2026
@@ -21,7 +20,6 @@
   const THRESHOLD_STEP = 5;
   const BUCKET_KEY_PREFIX = "bucket:";
   const READINGS_KEY = "readings";
-  const NOTIFICATION_ID_PREFIX = "claude-of-duty-";
   const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
   /* Lowest 5% multiple at or below a percentage. */
@@ -35,8 +33,8 @@
   }
 
   /*
-   * Turns an ISO reset timestamp into a short, human line. Within a day we show
-   * the remaining time ("Resets in 4 h 41 min"); further away we show the
+   * Turns an ISO reset timestamp into a short, localized line. Within a day we
+   * show the remaining time ("Resets in 4 h 11 min"); further away we show the
    * weekday and time ("Resets Fri 11:00").
    */
   function formatReset(resetsAt) {
@@ -64,6 +62,15 @@
     return browser.i18n.getMessage("resetAt", [when]);
   }
 
+  /* Display-ready meter for the popup and the alert window. */
+  function toDisplayMeter(reading) {
+    return {
+      label: reading.label,
+      percentText: formatPercent(reading.percent),
+      reset: formatReset(reading.resetsAt)
+    };
+  }
+
   // ===============================================================
   //  STORAGE
   // ===============================================================
@@ -80,111 +87,65 @@
     await browser.storage.local.set({ [storageKey]: bucket });
   }
 
-  /* Mirrors the latest readings to storage for the popup. */
+  /* Mirrors the latest readings to storage for the toolbar popup. */
   async function saveReadings(readings) {
     const map = {};
     for (const reading of readings) {
-      map[reading.key] = {
-        label: reading.label,
-        percentText: formatPercent(reading.percent),
-        reset: formatReset(reading.resetsAt)
-      };
+      map[reading.key] = toDisplayMeter(reading);
     }
     await browser.storage.local.set({ [READINGS_KEY]: map });
-  }
-
-  // ===============================================================
-  //  NOTIFICATIONS
-  // ===============================================================
-
-  function showNotification(key, title, body) {
-    browser.notifications.create(NOTIFICATION_ID_PREFIX + key, {
-      type: "basic",
-      iconUrl: browser.runtime.getURL("icons/icon-128.png"),
-      title: title,
-      message: body || ""
-    });
-  }
-
-  // Firefox notifications cannot show a native progress bar (that is a
-  // Chrome-only feature), so we draw one with block characters in the body.
-  // Each of the BAR_CELLS cells is filled in eighths for a smooth edge, with a
-  // half-block cap on each side.
-  const BAR_CELLS = 10;
-  const BAR_FULL = "█"; // full block
-  const BAR_EMPTY = "░"; // light shade
-  const BAR_CAP_LEFT = "▐"; // right half block, used as the left cap
-  const BAR_CAP_RIGHT = "▌"; // left half block, used as the right cap
-  const BAR_EIGHTHS = ["", "▏", "▎", "▍", "▌", "▋", "▊", "▉"];
-
-  /* Builds a fractional block-character progress bar for a percentage. */
-  function progressBar(percent) {
-    const clamped = Math.max(0, Math.min(100, percent));
-    const totalEighths = Math.round((clamped / 100) * BAR_CELLS * 8);
-    const fullCells = Math.floor(totalEighths / 8);
-    const remainder = totalEighths % 8;
-
-    let cells = BAR_FULL.repeat(fullCells);
-    if (remainder > 0) {
-      cells += BAR_EIGHTHS[remainder];
-    }
-    const usedCells = fullCells + (remainder > 0 ? 1 : 0);
-    cells += BAR_EMPTY.repeat(BAR_CELLS - usedCells);
-
-    return BAR_CAP_LEFT + cells + BAR_CAP_RIGHT;
-  }
-
-  function notifyReading(reading) {
-    const title = browser.i18n.getMessage("meterTitle", [reading.label, formatPercent(reading.percent)]);
-    const body = progressBar(reading.percent) + "\n" + formatReset(reading.resetsAt);
-    showNotification(reading.key, title, body);
   }
 
   // ===============================================================
   //  DECISION
   // ===============================================================
 
+  /* Returns true when the meter crossed into a new 5% bucket. */
   async function evaluateReading(reading) {
     const currentBucket = bucketOf(reading.percent);
     const lastBucket = await getStoredBucket(reading.key);
 
-    // First observation: record the baseline silently, no notification.
+    // First observation: record the baseline silently, no alert.
     if (lastBucket === null) {
       await setStoredBucket(reading.key, currentBucket);
-      return;
+      return false;
     }
-
-    const crossedStep = currentBucket > lastBucket;
-    const limitReset = currentBucket < lastBucket;
-    if (crossedStep || limitReset) {
-      notifyReading(reading);
+    if (currentBucket !== lastBucket) {
       await setStoredBucket(reading.key, currentBucket);
+      return true;
     }
+    return false;
   }
 
-  /* Saves readings for the popup, then alerts on any crossed 5% step. */
+  /* Saves readings, then shows one alert window for any crossed meters. */
   async function processReadings(readings) {
     await saveReadings(readings);
+
+    const crossed = [];
     for (const reading of readings) {
-      await evaluateReading(reading);
+      const didCross = await evaluateReading(reading);
+      if (didCross) {
+        crossed.push(toDisplayMeter(reading));
+      }
+    }
+    if (crossed.length > 0) {
+      await window.ClaudeOfDuty.alertWindow.show(crossed);
     }
   }
 
-  /* Replays the latest stored readings as notifications (popup "Test"). */
-  async function showStoredReadings() {
+  /* Shows the current readings in the alert window (toolbar "Test" button). */
+  async function showCurrentReadings() {
     const stored = await browser.storage.local.get(READINGS_KEY);
-    const readings = stored[READINGS_KEY] || {};
-    for (const key of Object.keys(readings)) {
-      const reading = readings[key];
-      const title = browser.i18n.getMessage("meterTitle", [reading.label, reading.percentText]);
-      const body = progressBar(Number(reading.percentText)) + "\n" + reading.reset;
-      showNotification(key, title, body);
+    const map = stored[READINGS_KEY] || {};
+    const meters = Object.keys(map).map((key) => map[key]);
+    if (meters.length > 0) {
+      await window.ClaudeOfDuty.alertWindow.show(meters);
     }
   }
 
   window.ClaudeOfDuty = window.ClaudeOfDuty || {};
   window.ClaudeOfDuty.monitor = {
     processReadings: processReadings,
-    showStoredReadings: showStoredReadings
+    showCurrentReadings: showCurrentReadings
   };
 })();

@@ -14,13 +14,6 @@
   "meterScopedFallback": {
     "message": "Modèle"
   },
-  "meterTitle": {
-    "message": "$LABEL$ : $VALUE$ %",
-    "placeholders": {
-      "label": { "content": "$1" },
-      "value": { "content": "$2" }
-    }
-  },
   "percentValue": {
     "message": "$VALUE$ %",
     "placeholders": {
@@ -46,9 +39,24 @@
     "message": "Actualiser"
   },
   "popupTest": {
-    "message": "Tester les notifications"
+    "message": "Tester l'alerte"
   },
   "popupHint": {
     "message": "Une alerte à chaque palier de 5 % sur la session et les limites hebdomadaires."
+  },
+  "popupDurationLabel": {
+    "message": "Durée de l'alerte (s)"
+  },
+  "alertTitle": {
+    "message": "Alerte d'usage"
+  },
+  "alertClose": {
+    "message": "Fermer"
+  },
+  "alertCloseIn": {
+    "message": "Fermeture dans $SECONDS$ s",
+    "placeholders": {
+      "seconds": { "content": "$1" }
+    }
   }
 }

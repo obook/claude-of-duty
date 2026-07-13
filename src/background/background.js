@@ -57,7 +57,7 @@
     if (message.command === "refresh") {
       poll();
     } else if (message.command === "test") {
-      monitor.showStoredReadings();
+      monitor.showCurrentReadings();
     }
   });
 })();

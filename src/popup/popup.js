@@ -12,6 +12,10 @@
  */
 
 const READINGS_KEY = "readings";
+const DURATION_KEY = "alertDurationSeconds";
+const DEFAULT_DURATION = 20;
+const MIN_DURATION = 3;
+const MAX_DURATION = 300;
 
 /* Preferred display order; any scoped-model meters are appended after these. */
 const METER_ORDER = ["session", "weekly-all"];
@@ -86,6 +90,25 @@ document.getElementById("test").addEventListener("click", () => {
   browser.runtime.sendMessage({ command: "test" });
 });
 
+const durationInput = document.getElementById("duration");
+
+/* Loads the saved alert duration, then saves it back on every change. */
+async function initDuration() {
+  const stored = await browser.storage.local.get(DURATION_KEY);
+  const value = typeof stored[DURATION_KEY] === "number" ? stored[DURATION_KEY] : DEFAULT_DURATION;
+  durationInput.value = value;
+
+  durationInput.addEventListener("change", () => {
+    let seconds = parseInt(durationInput.value, 10);
+    if (!Number.isFinite(seconds)) {
+      seconds = DEFAULT_DURATION;
+    }
+    seconds = Math.max(MIN_DURATION, Math.min(MAX_DURATION, seconds));
+    durationInput.value = seconds;
+    browser.storage.local.set({ [DURATION_KEY]: seconds });
+  });
+}
+
 /* Replaces the text of every [data-i18n] element with its localized message. */
 function applyTranslations() {
   const nodes = document.querySelectorAll("[data-i18n]");
@@ -106,3 +129,4 @@ browser.storage.onChanged.addListener((changes, area) => {
 
 applyTranslations();
 render();
+initDuration();

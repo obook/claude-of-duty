@@ -14,13 +14,6 @@
   "meterScopedFallback": {
     "message": "Scoped model"
   },
-  "meterTitle": {
-    "message": "$LABEL$: $VALUE$%",
-    "placeholders": {
-      "label": { "content": "$1" },
-      "value": { "content": "$2" }
-    }
-  },
   "percentValue": {
     "message": "$VALUE$%",
     "placeholders": {
@@ -46,9 +39,24 @@
     "message": "Refresh now"
   },
   "popupTest": {
-    "message": "Test notifications"
+    "message": "Test alert"
   },
   "popupHint": {
     "message": "Alerts fire every 5% on the session and weekly limits."
+  },
+  "popupDurationLabel": {
+    "message": "Alert duration (s)"
+  },
+  "alertTitle": {
+    "message": "Usage alert"
+  },
+  "alertClose": {
+    "message": "Close"
+  },
+  "alertCloseIn": {
+    "message": "Closes in $SECONDS$ s",
+    "placeholders": {
+      "seconds": { "content": "$1" }
+    }
   }
 }

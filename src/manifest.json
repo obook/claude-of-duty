@@ -15,7 +15,6 @@
   "content_security_policy": "script-src 'self'; object-src 'none'",
   "permissions": [
     "storage",
-    "notifications",
     "alarms",
     "https://claude.ai/*"
   ],
@@ -35,6 +34,7 @@
   "background": {
     "scripts": [
       "background/usage-api.js",
+      "background/alert-window.js",
       "background/monitor.js",
       "background/background.js"
     ]
