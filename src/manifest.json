@@ -1,8 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "Claude of Duty",
+  "name": "__MSG_extensionName__",
   "version": "1.0.0",
-  "description": "Watches your Claude plan usage and notifies you at every 5% step on the current session, the weekly all-models limit and the weekly per-model limit.",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "en",
   "author": "øbook",
   "homepage_url": "https://github.com/obook/claude-of-duty",
   "browser_specific_settings": {
@@ -29,7 +30,7 @@
       "64": "icons/icon-64.png"
     },
     "default_popup": "popup/popup.html",
-    "default_title": "Claude of Duty"
+    "default_title": "__MSG_extensionName__"
   },
   "background": {
     "scripts": [

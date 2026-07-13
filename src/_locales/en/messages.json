@@ -1,0 +1,54 @@
+{
+  "extensionName": {
+    "message": "Claude of Duty"
+  },
+  "extensionDescription": {
+    "message": "Watch your Claude plan usage and get notified at every 5% step on the session and weekly limits."
+  },
+  "meterSession": {
+    "message": "Current session"
+  },
+  "meterAllModels": {
+    "message": "All models"
+  },
+  "meterScopedFallback": {
+    "message": "Scoped model"
+  },
+  "meterTitle": {
+    "message": "$LABEL$: $VALUE$%",
+    "placeholders": {
+      "label": { "content": "$1" },
+      "value": { "content": "$2" }
+    }
+  },
+  "percentValue": {
+    "message": "$VALUE$%",
+    "placeholders": {
+      "value": { "content": "$1" }
+    }
+  },
+  "resetIn": {
+    "message": "Resets in $TIME$",
+    "placeholders": {
+      "time": { "content": "$1" }
+    }
+  },
+  "resetAt": {
+    "message": "Resets $WHEN$",
+    "placeholders": {
+      "when": { "content": "$1" }
+    }
+  },
+  "popupEmpty": {
+    "message": "No reading yet. Open Claude, then refresh."
+  },
+  "popupRefresh": {
+    "message": "Refresh now"
+  },
+  "popupTest": {
+    "message": "Test notifications"
+  },
+  "popupHint": {
+    "message": "Alerts fire every 5% on the session and weekly limits."
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "extensionName": {
+    "message": "Claude of Duty"
+  },
+  "extensionDescription": {
+    "message": "Surveille votre consommation des forfaits Claude et vous alerte à chaque palier de 5 % sur la session et les limites hebdomadaires."
+  },
+  "meterSession": {
+    "message": "Session en cours"
+  },
+  "meterAllModels": {
+    "message": "Tous les modèles"
+  },
+  "meterScopedFallback": {
+    "message": "Modèle"
+  },
+  "meterTitle": {
+    "message": "$LABEL$ : $VALUE$ %",
+    "placeholders": {
+      "label": { "content": "$1" },
+      "value": { "content": "$2" }
+    }
+  },
+  "percentValue": {
+    "message": "$VALUE$ %",
+    "placeholders": {
+      "value": { "content": "$1" }
+    }
+  },
+  "resetIn": {
+    "message": "Réinitialisation dans $TIME$",
+    "placeholders": {
+      "time": { "content": "$1" }
+    }
+  },
+  "resetAt": {
+    "message": "Réinitialisation $WHEN$",
+    "placeholders": {
+      "when": { "content": "$1" }
+    }
+  },
+  "popupEmpty": {
+    "message": "Aucune donnée pour l'instant. Ouvrez Claude, puis actualisez."
+  },
+  "popupRefresh": {
+    "message": "Actualiser"
+  },
+  "popupTest": {
+    "message": "Tester les notifications"
+  },
+  "popupHint": {
+    "message": "Une alerte à chaque palier de 5 % sur la session et les limites hebdomadaires."
+  }
+}

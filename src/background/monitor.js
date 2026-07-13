@@ -54,14 +54,14 @@
         parts.push(hours + " h");
       }
       parts.push(minutes + " min");
-      return "Resets in " + parts.join(" ");
+      return browser.i18n.getMessage("resetIn", [parts.join(" ")]);
     }
-    const label = resetDate.toLocaleString(undefined, {
+    const when = resetDate.toLocaleString(undefined, {
       weekday: "short",
       hour: "2-digit",
       minute: "2-digit"
     });
-    return "Resets " + label;
+    return browser.i18n.getMessage("resetAt", [when]);
   }
 
   // ===============================================================
@@ -107,7 +107,7 @@
   }
 
   function notifyReading(reading) {
-    const title = reading.label + " - " + formatPercent(reading.percent) + "%";
+    const title = browser.i18n.getMessage("meterTitle", [reading.label, formatPercent(reading.percent)]);
     showNotification(reading.key, title, formatReset(reading.resetsAt));
   }
 
@@ -147,7 +147,7 @@
     const readings = stored[READINGS_KEY] || {};
     for (const key of Object.keys(readings)) {
       const reading = readings[key];
-      const title = reading.label + " - " + reading.percentText + "%";
+      const title = browser.i18n.getMessage("meterTitle", [reading.label, reading.percentText]);
       showNotification(key, title, reading.reset);
     }
   }

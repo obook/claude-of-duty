@@ -13,15 +13,15 @@
     </header>
 
     <ul class="meters" id="meters">
-      <li class="empty" id="empty">No reading yet. Open Claude, then refresh.</li>
+      <li class="empty" id="empty" data-i18n="popupEmpty">No reading yet. Open Claude, then refresh.</li>
     </ul>
 
     <div class="actions">
-      <button type="button" id="refresh">Refresh now</button>
-      <button type="button" id="test">Test notifications</button>
+      <button type="button" id="refresh" data-i18n="popupRefresh">Refresh now</button>
+      <button type="button" id="test" data-i18n="popupTest">Test notifications</button>
     </div>
 
-    <p class="hint">Alerts fire every 5% on the session and weekly limits.</p>
+    <p class="hint" data-i18n="popupHint">Alerts fire every 5% on the session and weekly limits.</p>
 
     <script src="popup.js"></script>
   </body>

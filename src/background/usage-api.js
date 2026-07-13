@@ -90,18 +90,20 @@
    */
   function meterFromLimit(limit) {
     if (limit.kind === "session") {
-      return { key: "session", label: "Current session" };
+      return { key: "session", label: browser.i18n.getMessage("meterSession") };
     }
     if (limit.kind === "weekly_all") {
-      return { key: "weekly-all", label: "All models" };
+      return { key: "weekly-all", label: browser.i18n.getMessage("meterAllModels") };
     }
     if (limit.kind === "weekly_scoped") {
       const hasModel = limit.scope && limit.scope.model;
       const modelName = hasModel ? limit.scope.model.display_name : null;
       // A per-model key keeps several scoped limits (e.g. Fable and Opus) apart
-      // instead of overwriting one another.
+      // instead of overwriting one another. The model name itself is not
+      // translated; only the fallback label is.
       const slug = modelName ? modelName.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "model";
-      return { key: "weekly-scoped-" + slug, label: modelName || "Scoped model" };
+      const label = modelName || browser.i18n.getMessage("meterScopedFallback");
+      return { key: "weekly-scoped-" + slug, label: label };
     }
     return null;
   }

@@ -54,6 +54,11 @@ The extension only talks to `claude.ai`, with your own session, to read your
 own usage. Nothing is sent anywhere else, and it collects no analytics or
 telemetry. All state stays in local storage.
 
+## Localization
+
+The interface and notifications are available in English and French, following
+your browser language.
+
 ## Licence
 
 [MIT](LICENSE).

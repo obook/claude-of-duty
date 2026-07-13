@@ -33,7 +33,7 @@ function buildMeterRow(reading) {
 
   const percent = document.createElement("span");
   percent.className = "meter-percent";
-  percent.textContent = reading.percentText + "%";
+  percent.textContent = browser.i18n.getMessage("percentValue", [reading.percentText]);
 
   top.appendChild(label);
   top.appendChild(percent);
@@ -86,6 +86,17 @@ document.getElementById("test").addEventListener("click", () => {
   browser.runtime.sendMessage({ command: "test" });
 });
 
+/* Replaces the text of every [data-i18n] element with its localized message. */
+function applyTranslations() {
+  const nodes = document.querySelectorAll("[data-i18n]");
+  for (const node of nodes) {
+    const message = browser.i18n.getMessage(node.getAttribute("data-i18n"));
+    if (message) {
+      node.textContent = message;
+    }
+  }
+}
+
 // Keep the popup live while it is open.
 browser.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes[READINGS_KEY]) {
@@ -93,4 +104,5 @@ browser.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+applyTranslations();
 render();
