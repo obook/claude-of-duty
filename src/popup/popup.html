@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Claude of Duty</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <header class="header">
+      <img class="logo" src="../icons/icon.svg" alt="" width="28" height="28">
+      <h1 class="title">Claude of Duty</h1>
+    </header>
+
+    <ul class="meters" id="meters">
+      <li class="empty" id="empty">No reading yet. Open Claude, then refresh.</li>
+    </ul>
+
+    <div class="actions">
+      <button type="button" id="refresh">Refresh now</button>
+      <button type="button" id="test">Test notifications</button>
+    </div>
+
+    <p class="hint">Alerts fire every 5% on the session and weekly limits.</p>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

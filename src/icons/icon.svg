@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Claude of Duty">
+  <!-- Rounded warm-dark badge so the icon stays visible on any toolbar -->
+  <rect width="128" height="128" rx="28" fill="#2a2724"/>
+
+  <!-- Gauge track -->
+  <circle cx="64" cy="64" r="42" fill="none" stroke="#4a4540" stroke-width="9"/>
+
+  <!-- Gauge progress (roughly 72%), started at the top and drawn clockwise -->
+  <circle cx="64" cy="64" r="42" fill="none" stroke="#d97757" stroke-width="9"
+          stroke-linecap="round" stroke-dasharray="190 264"
+          transform="rotate(-90 64 64)"/>
+
+  <!-- Reticle in the centre: the "of Duty" targeting wink -->
+  <g stroke="#f2e9df" stroke-width="4" stroke-linecap="round" fill="none">
+    <circle cx="64" cy="64" r="11"/>
+    <line x1="64" y1="40" x2="64" y2="50"/>
+    <line x1="64" y1="78" x2="64" y2="88"/>
+    <line x1="40" y1="64" x2="50" y2="64"/>
+    <line x1="78" y1="64" x2="88" y2="64"/>
+  </g>
+</svg>

@@ -1,0 +1,49 @@
+{
+  "manifest_version": 2,
+  "name": "Claude of Duty",
+  "version": "1.0.0",
+  "description": "Watches your Claude plan usage and notifies you at every 5% step on the current session, the weekly all-models limit and the weekly per-model limit.",
+  "author": "øbook",
+  "homepage_url": "https://github.com/obook/claude-of-duty",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "claude-of-duty@free.fr",
+      "update_url": "https://raw.githubusercontent.com/obook/claude-of-duty/main/updates.json",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "content_security_policy": "script-src 'self'; object-src 'none'",
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms",
+    "https://claude.ai/*"
+  ],
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg",
+    "128": "icons/icon.svg"
+  },
+  "browser_action": {
+    "default_icon": "icons/icon.svg",
+    "default_popup": "popup/popup.html",
+    "default_title": "Claude of Duty"
+  },
+  "background": {
+    "scripts": [
+      "background/usage-api.js",
+      "background/monitor.js",
+      "background/background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content/relay.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
