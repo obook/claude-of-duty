@@ -1,6 +1,6 @@
 # Claude of Duty
 
-A small Firefox extension that watches your Claude plan usage and notifies you
+A small Firefox extension that watches your Claude plan usage and alerts you
 at every 5% step, so you know a limit is coming before you hit it.
 
 It reads your usage from Claude's own API using your signed-in session, so it
@@ -10,8 +10,8 @@ works in the background. You do not need to keep the usage page open.
 
 ## What it watches
 
-Three limits, each with its own notification when it crosses a 5% step and
-again when it resets:
+Three limits, each with its own alert when it crosses a 5% step and again when
+it resets:
 
 - **Current session**: the rolling 5-hour window (reset shown in hours).
 - **All models**: the weekly limit across every model (reset shown by day).
@@ -23,6 +23,8 @@ again when it resets:
   your session cookie. The extension never sees or stores your token.
 - Finds your organization automatically from `/api/organizations`.
 - Polls on a background timer, at browser start, and on demand from the popup.
+- Shows crossed limits in a small popup window that closes after a delay you
+  set (20 seconds by default).
 
 ## Install
 
@@ -43,10 +45,11 @@ again when it resets:
 
 ## Permissions
 
-- `notifications`: alert you when a step is crossed.
 - `storage`: remember the last notified step and latest readings.
 - `alarms`: schedule the periodic poll.
 - `https://claude.ai/*`: read your usage from the Claude API.
+
+The alert window uses `browser.windows`, which needs no permission.
 
 ## Privacy
 
@@ -56,8 +59,8 @@ telemetry. All state stays in local storage.
 
 ## Localization
 
-The interface and notifications are available in English and French, following
-your browser language.
+The interface and alerts are available in English and French, following your
+browser language.
 
 ## Licence
 
