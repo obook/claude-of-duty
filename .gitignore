@@ -1,0 +1,5 @@
+firefox-release/
+.build-firefox/
+*.xpi
+.env
+*credentials*
