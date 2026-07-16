@@ -11,11 +11,20 @@ The Claude of Duty Firefox extension monitors your Claude plan usage and notifie
 
 ## What it watches
 
-It monitors three limits, triggering a notification each time a 5% threshold is crossed and when the limit resets:
+It monitors three limits, triggering a notification each time the alert step is crossed and when the limit resets:
 
 - Current session: the 5-hour rolling window (reset time shown in hours).
 - All models: the weekly limit across all models (reset time shown in days).
 - Scoped model: the weekly limit for the model currently subject to one, labelled with that model's own name. If the model changes, the label updates automatically.
+
+The alert step defaults to 5% and can be changed to 10% or 25% from the extension's preferences page (right-click the toolbar icon, then "Manage Extension" > "Preferences", or `about:addons`). When any limit crosses a step, the alert window opens showing all three limits together, not just the one that changed.
+
+## In the popup
+
+- Each meter shows a progress bar and its reset time. The current session row is visually highlighted, since it resets much sooner than the weekly ones.
+- Once there is enough history, a trend line below each meter shows either "On track for reset." or "At this rate: limit in ~Xh", from a simple linear projection of its recent readings.
+- A 7-day chart plots the session limit's history as a line, with a dashed line at the configured alert step.
+- The toolbar icon always shows the current session usage as a badge, colored green below 70%, orange from 70% to 89%, and red from 90% up.
 
 ## How it works
 
@@ -45,7 +54,8 @@ Quick test instead: open `about:debugging`, "Load Temporary Add-on...", and pick
 - `alarms`: schedule the periodic poll.
 - `https://claude.ai/*`: read your usage from the Claude API.
 
-The alert window uses `browser.windows`, which needs no permission.
+The alert window uses `browser.windows`, and the toolbar badge uses
+`browser.browserAction`; neither needs a permission of its own.
 
 ## Privacy and security
 
@@ -100,7 +110,9 @@ Run the unit tests with Node, no dependencies needed:
 ```
 
 They cover the usage parsing, the meter mapping (including the scoped model),
-the reset formatting, and the bucket logic. `readingsFromUsage` also warns in
+the reset formatting, the bucket logic (including a configured alert step),
+the badge color thresholds, and the history pruning, entry building, and
+linear projection behind the trend line. `readingsFromUsage` also warns in
 the console if the API response stops looking the way it expects, which is the
 usual sign of an API change.
 
