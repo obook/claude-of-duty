@@ -119,6 +119,13 @@ body {
   font-size: 12px;
 }
 
+.meter-trend {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
 .empty {
   padding: 10px;
   color: var(--muted);

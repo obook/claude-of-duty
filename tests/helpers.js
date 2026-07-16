@@ -24,7 +24,9 @@ function getMessage(key, substitutions) {
     meterAllModels: "All models",
     meterScopedFallback: "Scoped model",
     resetIn: "Resets in " + first,
-    resetAt: "Resets " + first
+    resetAt: "Resets " + first,
+    trendOnTrack: "On track for reset.",
+    trendLimitIn: "At this rate: limit in ~" + first + "h"
   };
   return Object.prototype.hasOwnProperty.call(messages, key) ? messages[key] : key;
 }
@@ -36,6 +38,7 @@ function loadModules() {
 
   const backgroundDir = path.join(__dirname, "..", "src", "background");
   require(path.join(backgroundDir, "usage-api.js"));
+  require(path.join(backgroundDir, "history.js"));
   require(path.join(backgroundDir, "monitor.js"));
   require(path.join(backgroundDir, "badge.js"));
 

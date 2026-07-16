@@ -11,7 +11,8 @@
  *
  * When one or more meters cross a step in the same poll, they are shown
  * together in a single persistent popup window (see alert-window.js). Readings
- * are also mirrored to storage so the toolbar popup can show current values.
+ * are also mirrored to storage, alongside a trend line from history.js, so the
+ * toolbar popup can show current values and a projection.
  *
  * Author: øbook
  * Date: July 2026
@@ -82,6 +83,24 @@
     };
   }
 
+  /*
+   * Localized trend line for the popup ("At this rate: limit in ~3h" or "On
+   * track for reset."), or "" when there is no projection to show yet (see
+   * history.js) or no reset time to compare it against.
+   */
+  function formatTrend(reading, history) {
+    const projectedMs = window.ClaudeOfDuty.history.millisecondsUntilLimit(history, reading.key);
+    if (projectedMs === null || !reading.resetsAt) {
+      return "";
+    }
+    const remainingToResetMs = new Date(reading.resetsAt).getTime() - Date.now();
+    if (projectedMs > remainingToResetMs) {
+      return browser.i18n.getMessage("trendOnTrack");
+    }
+    const hours = Math.max(1, Math.round(projectedMs / (60 * 60 * 1000)));
+    return browser.i18n.getMessage("trendLimitIn", [String(hours)]);
+  }
+
   // ===============================================================
   //  STORAGE
   // ===============================================================
@@ -99,10 +118,12 @@
   }
 
   /* Mirrors the latest readings to storage for the toolbar popup. */
-  async function saveReadings(readings) {
+  async function saveReadings(readings, history) {
     const map = {};
     for (const reading of readings) {
-      map[reading.key] = toDisplayMeter(reading);
+      const meter = toDisplayMeter(reading);
+      meter.trend = formatTrend(reading, history);
+      map[reading.key] = meter;
     }
     await browser.storage.local.set({ [READINGS_KEY]: map });
   }
@@ -130,7 +151,8 @@
 
   /* Saves readings, then shows one alert window for any crossed meters. */
   async function processReadings(readings) {
-    await saveReadings(readings);
+    const history = await window.ClaudeOfDuty.history.appendHistory(readings, Date.now());
+    await saveReadings(readings, history);
 
     const alertStep = await getAlertStep();
     const crossed = [];
@@ -162,6 +184,7 @@
     // Exposed so the unit tests can exercise the pure helpers.
     bucketOf: bucketOf,
     formatPercent: formatPercent,
-    formatReset: formatReset
+    formatReset: formatReset,
+    formatTrend: formatTrend
   };
 })();

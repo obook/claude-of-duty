@@ -57,6 +57,14 @@ function buildMeterRow(key, reading) {
   item.appendChild(top);
   item.appendChild(bar);
   item.appendChild(reset);
+
+  if (reading.trend) {
+    const trend = document.createElement("div");
+    trend.className = "meter-trend";
+    trend.textContent = reading.trend;
+    item.appendChild(trend);
+  }
+
   return item;
 }
 

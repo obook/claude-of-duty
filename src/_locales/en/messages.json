@@ -32,6 +32,15 @@
       "when": { "content": "$1" }
     }
   },
+  "trendLimitIn": {
+    "message": "At this rate: limit in ~$HOURS$h",
+    "placeholders": {
+      "hours": { "content": "$1" }
+    }
+  },
+  "trendOnTrack": {
+    "message": "On track for reset."
+  },
   "popupEmpty": {
     "message": "No reading yet. Open Claude, then refresh."
   },

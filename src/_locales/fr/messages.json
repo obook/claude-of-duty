@@ -32,6 +32,15 @@
       "when": { "content": "$1" }
     }
   },
+  "trendLimitIn": {
+    "message": "À ce rythme : limite dans ~$HOURS$ h",
+    "placeholders": {
+      "hours": { "content": "$1" }
+    }
+  },
+  "trendOnTrack": {
+    "message": "Rythme compatible avec la réinitialisation."
+  },
   "popupEmpty": {
     "message": "Aucune donnée pour l'instant. Ouvrez Claude, puis actualisez."
   },
