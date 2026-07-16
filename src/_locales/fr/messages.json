@@ -42,7 +42,13 @@
     "message": "Tester l'alerte"
   },
   "popupHint": {
-    "message": "Une alerte à chaque palier de 5 %. Durée à 0 pour garder la fenêtre ouverte."
+    "message": "Une alerte à chaque palier configuré. Durée à 0 pour garder la fenêtre ouverte."
+  },
+  "optionsStepLabel": {
+    "message": "Palier d'alerte"
+  },
+  "optionsStepHint": {
+    "message": "Une alerte se déclenche à chaque franchissement de ce pourcentage."
   },
   "popupDurationLabel": {
     "message": "Durée de l'alerte (s)"

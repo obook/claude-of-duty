@@ -2,10 +2,12 @@
  * monitor.js
  * Threshold logic, run in the background page.
  *
- * For each meter we remember the last 5% "bucket" we alerted on (0, 5, 10 ...).
- * A fresh reading in a different bucket (up when usage climbs, down when the
- * limit resets) is worth an alert. The first time a meter is ever seen we only
- * store the baseline, so nothing fires until something actually changes.
+ * For each meter we remember the last "bucket" we alerted on (0, 5, 10 ... for
+ * the default 5% step, or 0, 10, 20 ... / 0, 25, 50 ... for a coarser step
+ * chosen in the preferences page). A fresh reading in a different bucket (up
+ * when usage climbs, down when the limit resets) is worth an alert. The first
+ * time a meter is ever seen we only store the baseline, so nothing fires until
+ * something actually changes.
  *
  * When one or more meters cross a step in the same poll, they are shown
  * together in a single persistent popup window (see alert-window.js). Readings
@@ -17,14 +19,23 @@
  */
 
 (function () {
-  const THRESHOLD_STEP = 5;
+  const DEFAULT_ALERT_STEP = 5;
+  const ALERT_STEP_KEY = "alertStep";
   const BUCKET_KEY_PREFIX = "bucket:";
   const READINGS_KEY = "readings";
   const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-  /* Lowest 5% multiple at or below a percentage. */
-  function bucketOf(percent) {
-    return Math.floor(percent / THRESHOLD_STEP) * THRESHOLD_STEP;
+  /* Lowest multiple of `step` at or below a percentage. */
+  function bucketOf(percent, step) {
+    const alertStep = step || DEFAULT_ALERT_STEP;
+    return Math.floor(percent / alertStep) * alertStep;
+  }
+
+  /* Reads the user's alert step from storage, falling back to the default. */
+  async function getAlertStep() {
+    const stored = await browser.storage.local.get(ALERT_STEP_KEY);
+    const value = stored[ALERT_STEP_KEY];
+    return typeof value === "number" ? value : DEFAULT_ALERT_STEP;
   }
 
   /* Formats a percentage: one decimal at most, no trailing ".0". */
@@ -100,9 +111,9 @@
   //  DECISION
   // ===============================================================
 
-  /* Returns true when the meter crossed into a new 5% bucket. */
-  async function evaluateReading(reading) {
-    const currentBucket = bucketOf(reading.percent);
+  /* Returns true when the meter crossed into a new alert-step bucket. */
+  async function evaluateReading(reading, alertStep) {
+    const currentBucket = bucketOf(reading.percent, alertStep);
     const lastBucket = await getStoredBucket(reading.key);
 
     // First observation: record the baseline silently, no alert.
@@ -121,9 +132,10 @@
   async function processReadings(readings) {
     await saveReadings(readings);
 
+    const alertStep = await getAlertStep();
     const crossed = [];
     for (const reading of readings) {
-      const didCross = await evaluateReading(reading);
+      const didCross = await evaluateReading(reading, alertStep);
       if (didCross) {
         crossed.push(toDisplayMeter(reading));
       }

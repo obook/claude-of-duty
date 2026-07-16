@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Claude of Duty</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <header class="header">
+      <img class="logo" src="../icons/icon.svg" alt="" width="28" height="28">
+      <h1 class="title">Claude of Duty</h1>
+    </header>
+
+    <div class="settings">
+      <label class="step-label" for="step" data-i18n="optionsStepLabel">Alert step</label>
+      <div class="step-control">
+        <input class="step-input" type="range" id="step" min="0" max="2" step="1" list="step-ticks">
+        <datalist id="step-ticks">
+          <option value="0"></option>
+          <option value="1"></option>
+          <option value="2"></option>
+        </datalist>
+        <output class="step-output" id="step-output" for="step"></output>
+      </div>
+    </div>
+
+    <p class="hint" data-i18n="optionsStepHint">Alerts fire every time usage crosses this percentage.</p>
+
+    <script src="options.js"></script>
+  </body>
+</html>

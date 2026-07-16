@@ -42,7 +42,13 @@
     "message": "Test alert"
   },
   "popupHint": {
-    "message": "Alerts fire at every 5% step. Set the duration to 0 to keep the window open."
+    "message": "Alerts fire at every configured step. Set the duration to 0 to keep the window open."
+  },
+  "optionsStepLabel": {
+    "message": "Alert step"
+  },
+  "optionsStepHint": {
+    "message": "Alerts fire every time usage crosses this percentage."
   },
   "popupDurationLabel": {
     "message": "Alert duration (s)"
