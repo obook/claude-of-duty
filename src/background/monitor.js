@@ -9,10 +9,11 @@
  * time a meter is ever seen we only store the baseline, so nothing fires until
  * something actually changes.
  *
- * When one or more meters cross a step in the same poll, they are shown
- * together in a single persistent popup window (see alert-window.js). Readings
- * are also mirrored to storage, alongside a trend line from history.js, so the
- * toolbar popup can show current values and a projection.
+ * When one or more meters cross a step in the same poll, every current meter
+ * (not just the one that crossed) is shown together in a single persistent
+ * popup window (see alert-window.js), so the user always sees the full
+ * picture. Readings are also mirrored to storage, alongside a trend line from
+ * history.js, so the toolbar popup can show current values and a projection.
  *
  * Author: øbook
  * Date: July 2026
@@ -149,21 +150,24 @@
     return false;
   }
 
-  /* Saves readings, then shows one alert window for any crossed meters. */
+  /*
+   * Saves readings, then, if any meter crossed a step, shows the alert window
+   * with every current meter (not just the one that crossed), so the user
+   * always sees the full picture.
+   */
   async function processReadings(readings) {
     const history = await window.ClaudeOfDuty.history.appendHistory(readings, Date.now());
     await saveReadings(readings, history);
 
     const alertStep = await getAlertStep();
-    const crossed = [];
+    let anyCrossed = false;
     for (const reading of readings) {
       const didCross = await evaluateReading(reading, alertStep);
-      if (didCross) {
-        crossed.push(toDisplayMeter(reading));
-      }
+      anyCrossed = anyCrossed || didCross;
     }
-    if (crossed.length > 0) {
-      await window.ClaudeOfDuty.alertWindow.show(crossed);
+    if (anyCrossed) {
+      const allMeters = readings.map((reading) => toDisplayMeter(reading));
+      await window.ClaudeOfDuty.alertWindow.show(allMeters);
     }
   }
 
