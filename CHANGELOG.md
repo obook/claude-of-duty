@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-16
+
 ### Added
 
 - Preferences page to choose the alert step (5%, 10%, or 25%) with a slider.
@@ -28,6 +30,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - The alert window now shows every current meter when one crosses a step,
   instead of only the meter that crossed.
+
+### Fixed
+
+- Adjusted the volume of the dong alert sound.
 
 ## [1.0.1] - 2026-07-13
 
@@ -56,5 +62,6 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Initial version.
 
-[Unreleased]: https://github.com/obook/claude-of-duty/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/obook/claude-of-duty/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/obook/claude-of-duty/releases/tag/v1.1.0
 [1.0.1]: https://github.com/obook/claude-of-duty/releases/tag/v1.0.1
