@@ -25,9 +25,9 @@ const metersList = document.getElementById("meters");
 const emptyItem = document.getElementById("empty");
 
 /* Builds one meter row element from a stored reading. */
-function buildMeterRow(reading) {
+function buildMeterRow(key, reading) {
   const item = document.createElement("li");
-  item.className = "meter";
+  item.className = key === "session" ? "meter limit-session" : "meter";
 
   const top = document.createElement("div");
   top.className = "meter-top";
@@ -79,7 +79,7 @@ async function render() {
     return;
   }
   for (const key of keys) {
-    metersList.appendChild(buildMeterRow(readings[key]));
+    metersList.appendChild(buildMeterRow(key, readings[key]));
   }
 }
 

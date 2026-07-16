@@ -76,6 +76,13 @@ body {
   border-radius: 10px;
 }
 
+/* The session limit resets much sooner than the weekly ones, so it stands out. */
+.limit-session {
+  border-color: var(--accent);
+  border-left-width: 3px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
 .meter-top {
   display: flex;
   justify-content: space-between;
