@@ -14,9 +14,19 @@
 const READINGS_KEY = "readings";
 const DURATION_KEY = "alertDurationSeconds";
 const SOUND_KEY = "soundChoice";
+const HISTORY_KEY = "usageHistory";
+const ALERT_STEP_KEY = "alertStep";
 const DEFAULT_DURATION = 20;
 const MIN_DURATION = 0; // 0 keeps the alert window open until the next alert
 const MAX_DURATION = 300;
+const DEFAULT_ALERT_STEP = 5;
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const CHART_WIDTH = 300;
+const CHART_PLOT_HEIGHT = 48;
+const CHART_LABEL_HEIGHT = 12;
+const CHART_HEIGHT = CHART_PLOT_HEIGHT + CHART_LABEL_HEIGHT;
+const CHART_MIN_POINTS = 2;
 
 /* Preferred display order; any scoped-model meters are appended after these. */
 const METER_ORDER = ["session", "weekly-all"];
@@ -73,6 +83,101 @@ function orderedKeys(readings) {
   const known = METER_ORDER.filter((key) => readings[key]);
   const extra = Object.keys(readings).filter((key) => !METER_ORDER.includes(key));
   return known.concat(extra);
+}
+
+// ===============================================================
+//  7-DAY CHART
+// ===============================================================
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const chartContainer = document.getElementById("history-chart");
+
+/* Creates one namespaced SVG element with the given attributes. */
+function createSvgElement(tagName, attributes) {
+  const element = document.createElementNS(SVG_NS, tagName);
+  for (const name of Object.keys(attributes)) {
+    element.setAttribute(name, attributes[name]);
+  }
+  return element;
+}
+
+/* "x,y" pairs for the session percentage polyline, over a 7-day window. */
+function chartPoints(history, windowStart) {
+  return history
+    .filter((entry) => typeof entry.session === "number")
+    .map((entry) => {
+      const x = ((entry.ts - windowStart) / SEVEN_DAYS_MS) * CHART_WIDTH;
+      const clampedPercent = Math.max(0, Math.min(100, entry.session));
+      const y = CHART_PLOT_HEIGHT - (clampedPercent / 100) * CHART_PLOT_HEIGHT;
+      return x.toFixed(1) + "," + y.toFixed(1);
+    });
+}
+
+/* Weekday-abbreviation labels for the 7 days ending today. */
+function chartDayLabels(now) {
+  const labels = [];
+  for (let daysAgo = 6; daysAgo >= 0; daysAgo -= 1) {
+    const date = new Date(now - daysAgo * 24 * 60 * 60 * 1000);
+    labels.push(date.toLocaleDateString(undefined, { weekday: "short" }));
+  }
+  return labels;
+}
+
+/* Builds the chart's SVG element: the session line, its threshold, and days. */
+function buildChartSvg(points, thresholdPercent, dayLabels) {
+  const svg = createSvgElement("svg", {
+    viewBox: "0 0 " + CHART_WIDTH + " " + CHART_HEIGHT,
+    width: "100%",
+    height: String(CHART_HEIGHT)
+  });
+
+  const thresholdY = (CHART_PLOT_HEIGHT - (thresholdPercent / 100) * CHART_PLOT_HEIGHT).toFixed(1);
+  svg.appendChild(createSvgElement("line", {
+    class: "chart-threshold",
+    x1: "0",
+    y1: thresholdY,
+    x2: String(CHART_WIDTH),
+    y2: thresholdY
+  }));
+
+  svg.appendChild(createSvgElement("polyline", {
+    class: "chart-line",
+    points: points.join(" ")
+  }));
+
+  const dayWidth = CHART_WIDTH / dayLabels.length;
+  for (let index = 0; index < dayLabels.length; index += 1) {
+    const x = ((index + 0.5) * dayWidth).toFixed(1);
+    const dayText = createSvgElement("text", {
+      class: "chart-day",
+      x: x,
+      y: String(CHART_HEIGHT),
+      "text-anchor": "middle"
+    });
+    dayText.textContent = dayLabels[index];
+    svg.appendChild(dayText);
+  }
+
+  return svg;
+}
+
+/* Redraws the 7-day session usage chart, or hides it with too little data. */
+async function renderChart() {
+  const stored = await browser.storage.local.get([HISTORY_KEY, ALERT_STEP_KEY]);
+  const history = Array.isArray(stored[HISTORY_KEY]) ? stored[HISTORY_KEY] : [];
+  const alertStep = typeof stored[ALERT_STEP_KEY] === "number" ? stored[ALERT_STEP_KEY] : DEFAULT_ALERT_STEP;
+
+  const now = Date.now();
+  const points = chartPoints(history, now - SEVEN_DAYS_MS);
+
+  chartContainer.innerHTML = "";
+  if (points.length < CHART_MIN_POINTS) {
+    chartContainer.hidden = true;
+    return;
+  }
+
+  chartContainer.hidden = false;
+  chartContainer.appendChild(buildChartSvg(points, alertStep, chartDayLabels(now)));
 }
 
 /* Redraws the whole list from the stored readings. */
@@ -163,12 +268,19 @@ function applyTranslations() {
 
 // Keep the popup live while it is open.
 browser.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes[READINGS_KEY]) {
+  if (area !== "local") {
+    return;
+  }
+  if (changes[READINGS_KEY]) {
     render();
+  }
+  if (changes[HISTORY_KEY] || changes[ALERT_STEP_KEY]) {
+    renderChart();
   }
 });
 
 applyTranslations();
 render();
+renderChart();
 initDuration();
 initSound();
