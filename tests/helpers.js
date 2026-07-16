@@ -29,7 +29,7 @@ function getMessage(key, substitutions) {
   return Object.prototype.hasOwnProperty.call(messages, key) ? messages[key] : key;
 }
 
-/* Loads usage-api.js and monitor.js and returns window.ClaudeOfDuty. */
+/* Loads the background scripts and returns window.ClaudeOfDuty. */
 function loadModules() {
   global.window = {};
   global.browser = { i18n: { getMessage: getMessage } };
@@ -37,6 +37,7 @@ function loadModules() {
   const backgroundDir = path.join(__dirname, "..", "src", "background");
   require(path.join(backgroundDir, "usage-api.js"));
   require(path.join(backgroundDir, "monitor.js"));
+  require(path.join(backgroundDir, "badge.js"));
 
   return global.window.ClaudeOfDuty;
 }

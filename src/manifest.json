@@ -43,6 +43,7 @@
       "background/usage-api.js",
       "background/alert-window.js",
       "background/monitor.js",
+      "background/badge.js",
       "background/background.js"
     ]
   },
