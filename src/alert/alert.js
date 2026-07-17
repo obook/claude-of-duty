@@ -6,21 +6,31 @@
  * and opens this window. Here we render the meters, run a visible countdown
  * from the configured duration, and close the window when it reaches zero. A
  * new alert arriving while the window is open re-renders it and restarts the
- * countdown.
+ * countdown. The "keep open" button cancels the countdown for good, so the
+ * window stays until it is closed by hand. The snooze button silences alerts
+ * for an hour (monitor.js checks snoozeUntil) and closes the window. A
+ * payload of kind "reset" swaps the title for the limit-reset one.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
 
 const PAYLOAD_KEY = "alertPayload";
 const DURATION_KEY = "alertDurationSeconds";
+const SNOOZE_KEY = "snoozeUntil";
 const DEFAULT_DURATION = 20;
+const SNOOZE_MS = 60 * 60 * 1000;
 
+const titleEl = document.getElementById("title");
 const metersList = document.getElementById("meters");
 const countdownEl = document.getElementById("countdown");
+const keepOpenButton = document.getElementById("keep-open");
 
 let countdownTimer = null;
+
+/* True once the user asked the window to stay open; no countdown runs then. */
+let pinned = false;
 
 /* Replaces the text of every [data-i18n] element with its localized message. */
 function applyTranslations() {
@@ -69,10 +79,11 @@ function buildMeterRow(meter) {
   return item;
 }
 
-/* Redraws the meter list from the stored payload. */
+/* Redraws the title and meter list from the stored payload. */
 async function render() {
   const stored = await browser.storage.local.get(PAYLOAD_KEY);
   const payload = stored[PAYLOAD_KEY] || { meters: [] };
+  titleEl.textContent = browser.i18n.getMessage(payload.kind === "reset" ? "alertResetTitle" : "alertTitle");
   metersList.innerHTML = "";
   for (const meter of payload.meters) {
     metersList.appendChild(buildMeterRow(meter));
@@ -83,10 +94,20 @@ function updateCountdown(seconds) {
   countdownEl.textContent = browser.i18n.getMessage("alertCloseIn", [String(seconds)]);
 }
 
+/* Stops any running countdown and shows the given persistent message. */
+function stopCountdown(messageKey) {
+  if (countdownTimer !== null) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+  countdownEl.textContent = browser.i18n.getMessage(messageKey);
+  keepOpenButton.hidden = true;
+}
+
 /*
  * Counts down from the configured duration and closes the window at zero.
  * A duration of 0 means the window stays open until it is closed by hand or
- * replaced by the next alert.
+ * replaced by the next alert. A pinned window never restarts its countdown.
  */
 async function startCountdown() {
   const stored = await browser.storage.local.get(DURATION_KEY);
@@ -97,10 +118,11 @@ async function startCountdown() {
     countdownTimer = null;
   }
 
-  if (duration <= 0) {
-    countdownEl.textContent = browser.i18n.getMessage("alertPersistent");
+  if (pinned || duration <= 0) {
+    stopCountdown(pinned ? "alertPinned" : "alertPersistent");
     return;
   }
+  keepOpenButton.hidden = false;
 
   let remaining = duration;
   updateCountdown(remaining);
@@ -117,6 +139,18 @@ async function startCountdown() {
 }
 
 document.getElementById("close").addEventListener("click", () => {
+  window.close();
+});
+
+// Cancel the countdown: the window stays open until it is closed by hand.
+keepOpenButton.addEventListener("click", () => {
+  pinned = true;
+  stopCountdown("alertPinned");
+});
+
+// Silence alerts for an hour and close the window.
+document.getElementById("snooze").addEventListener("click", async () => {
+  await browser.storage.local.set({ [SNOOZE_KEY]: Date.now() + SNOOZE_MS });
   window.close();
 });
 

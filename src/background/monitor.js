@@ -12,10 +12,13 @@
  * When one or more meters cross a step in the same poll, every current meter
  * (not just the one that crossed) is shown together in a single persistent
  * popup window (see alert-window.js), so the user always sees the full
- * picture. Readings are also mirrored to storage, alongside a trend line from
+ * picture. Crossings on muted meters and crossings during a snooze are
+ * counted (the buckets move) but never open the window. A batch where every
+ * crossing goes down is a limit reset and is shown with a dedicated title.
+ * Readings are also mirrored to storage, alongside a trend line from
  * history.js, so the toolbar popup can show current values and a projection.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
@@ -25,12 +28,40 @@
   const ALERT_STEP_KEY = "alertStep";
   const BUCKET_KEY_PREFIX = "bucket:";
   const READINGS_KEY = "readings";
+  const SNOOZE_KEY = "snoozeUntil";
+  const MUTED_KEY = "mutedMeters";
   const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+  /* Polling tightens when any meter gets close to its limit. */
+  const NORMAL_POLL_MINUTES = 5;
+  const FAST_POLL_MINUTES = 1;
+  const FAST_POLL_THRESHOLD_PERCENT = 80;
 
   /* Lowest multiple of `step` at or below a percentage. */
   function bucketOf(percent, step) {
     const alertStep = step || DEFAULT_ALERT_STEP;
     return Math.floor(percent / alertStep) * alertStep;
+  }
+
+  /* "up" when usage climbed into a higher bucket, "down" when a limit reset. */
+  function directionOf(lastBucket, currentBucket) {
+    return currentBucket > lastBucket ? "up" : "down";
+  }
+
+  /* A batch of crossings is a usage alert as soon as one meter climbed. */
+  function kindForDirections(directions) {
+    return directions.indexOf("up") >= 0 ? "usage" : "reset";
+  }
+
+  /* True while a user-requested snooze is still running. */
+  function isSnoozed(snoozeUntil, now) {
+    return typeof snoozeUntil === "number" && now < snoozeUntil;
+  }
+
+  /* Minutes until the next poll: shorter once any meter nears its limit. */
+  function pollPeriodFor(readings) {
+    const highest = readings.reduce((max, reading) => Math.max(max, reading.percent), 0);
+    return highest >= FAST_POLL_THRESHOLD_PERCENT ? FAST_POLL_MINUTES : NORMAL_POLL_MINUTES;
   }
 
   /* Reads the user's alert step from storage, falling back to the default. */
@@ -118,6 +149,20 @@
     await browser.storage.local.set({ [storageKey]: bucket });
   }
 
+  /*
+   * Wipes every stored bucket, e.g. when switching organizations (see
+   * background.js): the next reading from the new organization must be
+   * treated as a fresh baseline, not compared against the previous
+   * organization's usage.
+   */
+  async function clearBuckets() {
+    const all = await browser.storage.local.get(null);
+    const bucketKeys = Object.keys(all).filter((key) => key.indexOf(BUCKET_KEY_PREFIX) === 0);
+    if (bucketKeys.length > 0) {
+      await browser.storage.local.remove(bucketKeys);
+    }
+  }
+
   /* Mirrors the latest readings to storage for the toolbar popup. */
   async function saveReadings(readings, history) {
     const map = {};
@@ -133,7 +178,7 @@
   //  DECISION
   // ===============================================================
 
-  /* Returns true when the meter crossed into a new alert-step bucket. */
+  /* Crossing direction ("up" or "down") for the meter, or null without one. */
   async function evaluateReading(reading, alertStep) {
     const currentBucket = bucketOf(reading.percent, alertStep);
     const lastBucket = await getStoredBucket(reading.key);
@@ -141,34 +186,41 @@
     // First observation: record the baseline silently, no alert.
     if (lastBucket === null) {
       await setStoredBucket(reading.key, currentBucket);
-      return false;
+      return null;
     }
     if (currentBucket !== lastBucket) {
       await setStoredBucket(reading.key, currentBucket);
-      return true;
+      return directionOf(lastBucket, currentBucket);
     }
-    return false;
+    return null;
   }
 
   /*
-   * Saves readings, then, if any meter crossed a step, shows the alert window
-   * with every current meter (not just the one that crossed), so the user
-   * always sees the full picture.
+   * Saves readings, then, if any unmuted meter crossed a step outside a
+   * snooze, shows the alert window with every current meter (not just the one
+   * that crossed), so the user always sees the full picture.
    */
   async function processReadings(readings) {
     const history = await window.ClaudeOfDuty.history.appendHistory(readings, Date.now());
     await saveReadings(readings, history);
 
     const alertStep = await getAlertStep();
-    let anyCrossed = false;
+    const stored = await browser.storage.local.get([SNOOZE_KEY, MUTED_KEY]);
+    const muted = new Set(Array.isArray(stored[MUTED_KEY]) ? stored[MUTED_KEY] : []);
+
+    const directions = [];
     for (const reading of readings) {
-      const didCross = await evaluateReading(reading, alertStep);
-      anyCrossed = anyCrossed || didCross;
+      const direction = await evaluateReading(reading, alertStep);
+      if (direction !== null && !muted.has(reading.key)) {
+        directions.push(direction);
+      }
     }
-    if (anyCrossed) {
-      const allMeters = readings.map((reading) => toDisplayMeter(reading));
-      await window.ClaudeOfDuty.alertWindow.show(allMeters);
+
+    if (directions.length === 0 || isSnoozed(stored[SNOOZE_KEY], Date.now())) {
+      return;
     }
+    const allMeters = readings.map((reading) => toDisplayMeter(reading));
+    await window.ClaudeOfDuty.alertWindow.show(allMeters, kindForDirections(directions));
   }
 
   /* Shows the current readings in the alert window (toolbar "Test" button). */
@@ -181,14 +233,29 @@
     }
   }
 
+  /*
+   * Resets the alert baseline: forgets every meter's last bucket and clears
+   * the history, so the very next reading is a silent baseline instead of
+   * being compared or charted against a different organization's usage.
+   */
+  async function resetBaseline() {
+    await clearBuckets();
+    await window.ClaudeOfDuty.history.clearHistory();
+  }
+
   window.ClaudeOfDuty = window.ClaudeOfDuty || {};
   window.ClaudeOfDuty.monitor = {
     processReadings: processReadings,
     showCurrentReadings: showCurrentReadings,
+    pollPeriodFor: pollPeriodFor,
+    resetBaseline: resetBaseline,
     // Exposed so the unit tests can exercise the pure helpers.
     bucketOf: bucketOf,
     formatPercent: formatPercent,
     formatReset: formatReset,
-    formatTrend: formatTrend
+    formatTrend: formatTrend,
+    directionOf: directionOf,
+    kindForDirections: kindForDirections,
+    isSnoozed: isSnoozed
   };
 })();

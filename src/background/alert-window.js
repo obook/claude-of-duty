@@ -10,7 +10,7 @@
  *
  * The public API is window.ClaudeOfDuty.alertWindow.show(meters).
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
@@ -19,9 +19,12 @@
   const ALERT_URL = "alert/alert.html";
   const ALERT_PAYLOAD_KEY = "alertPayload";
   const ALERT_WIDTH = 360;
-  const ALERT_HEIGHT = 340;
+  // Tall enough for the footer's three buttons to wrap onto a second row
+  // (long locales such as French routinely need it) without clipping.
+  const ALERT_HEIGHT = 380;
   const SCREEN_MARGIN = 24;
   const SOUND_KEY = "soundChoice";
+  const VOLUME_KEY = "soundVolume";
   const SOUND_FILES = {
     bell: "sounds/bell.mp3",
     ding: "sounds/ding.mp3",
@@ -56,15 +59,24 @@
     }
   }
 
+  /* Audio gain (0..1) for a stored volume in percent; missing means full. */
+  function volumeGain(volume) {
+    if (typeof volume !== "number" || !Number.isFinite(volume)) {
+      return 1;
+    }
+    return Math.min(100, Math.max(0, volume)) / 100;
+  }
+
   /* Plays the chosen alert sound, or nothing when set to silence. */
   async function playSelectedSound() {
-    const stored = await browser.storage.local.get(SOUND_KEY);
+    const stored = await browser.storage.local.get([SOUND_KEY, VOLUME_KEY]);
     const file = SOUND_FILES[stored[SOUND_KEY]];
     if (!file) {
       return;
     }
     try {
       const audio = new Audio(browser.runtime.getURL(file));
+      audio.volume = volumeGain(stored[VOLUME_KEY]);
       await audio.play();
     } catch (error) {
       // A missing sound file or a blocked play must not break the alert.
@@ -73,15 +85,16 @@
 
   /*
    * Shows the given meters. meters is an array of display-ready objects:
-   * { label, percentText, reset }.
+   * { label, percentText, reset }. kind is "usage" (default) or "reset",
+   * which the alert page turns into its title.
    */
-  async function show(meters) {
+  async function show(meters, kind) {
     playSelectedSound();
 
     // The timestamp guarantees the alert page sees a change and resets its
     // countdown, even when the same meters cross again.
     await browser.storage.local.set({
-      [ALERT_PAYLOAD_KEY]: { meters: meters, at: Date.now() }
+      [ALERT_PAYLOAD_KEY]: { meters: meters, kind: kind || "usage", at: Date.now() }
     });
 
     if (alertWindowId !== null && await windowStillExists(alertWindowId)) {

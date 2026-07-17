@@ -23,9 +23,52 @@
         </datalist>
         <output class="step-output" id="step-output" for="step"></output>
       </div>
+      <p class="hint" data-i18n="optionsStepHint">Alerts fire every time usage crosses this percentage.</p>
     </div>
 
-    <p class="hint" data-i18n="optionsStepHint">Alerts fire every time usage crosses this percentage.</p>
+    <div class="settings">
+      <div class="row">
+        <label class="row-label" for="duration" data-i18n="popupDurationLabel">Alert duration (s)</label>
+        <input class="duration-input" type="number" id="duration" min="0" max="300" step="1">
+      </div>
+      <p class="hint" data-i18n="optionsDurationHint">Set the duration to 0 to keep the alert window open.</p>
+    </div>
+
+    <div class="settings">
+      <div class="row">
+        <label class="row-label" for="sound" data-i18n="popupSoundLabel">Alert sound</label>
+        <select class="sound-select" id="sound">
+          <option value="none" data-i18n="soundNone">Silence</option>
+          <option value="bell" data-i18n="soundBell">Bell</option>
+          <option value="ding" data-i18n="soundDing">Ding</option>
+          <option value="dong" data-i18n="soundDong">Dong</option>
+          <option value="zingz" data-i18n="soundZingz">Zingz</option>
+        </select>
+      </div>
+      <div class="row">
+        <label class="row-label" for="volume" data-i18n="optionsVolumeLabel">Volume</label>
+        <div class="step-control volume-control">
+          <input class="step-input" type="range" id="volume" min="0" max="100" step="5">
+          <output class="step-output" id="volume-output" for="volume"></output>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings">
+      <span class="step-label" data-i18n="optionsMetersLabel">Alert on these meters</span>
+      <ul class="meter-list" id="meter-list"></ul>
+      <p class="hint" data-i18n="optionsMetersHint">Unchecked meters never trigger alerts. Meters appear after the first reading.</p>
+    </div>
+
+    <div class="settings">
+      <div class="row">
+        <label class="row-label" for="organization" data-i18n="optionsOrgLabel">Organization</label>
+        <select class="sound-select" id="organization">
+          <option value="" data-i18n="optionsOrgAuto">Automatic</option>
+        </select>
+      </div>
+      <p class="hint" data-i18n="optionsOrgHint">Which Claude organization to watch.</p>
+    </div>
 
     <script src="options.js"></script>
   </body>

@@ -11,7 +11,7 @@
  * or decreasing); the popup separately reads the raw history to draw its
  * 7-day chart.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
@@ -50,6 +50,11 @@
     const pruned = pruneHistory(history, timestamp);
     await browser.storage.local.set({ [HISTORY_KEY]: pruned });
     return pruned;
+  }
+
+  /* Wipes the history, e.g. when switching organizations (see monitor.js). */
+  async function clearHistory() {
+    await browser.storage.local.remove(HISTORY_KEY);
   }
 
   /*
@@ -93,6 +98,7 @@
   window.ClaudeOfDuty = window.ClaudeOfDuty || {};
   window.ClaudeOfDuty.history = {
     appendHistory: appendHistory,
+    clearHistory: clearHistory,
     // Exposed so the unit tests can exercise the pure helpers.
     pruneHistory: pruneHistory,
     entryFromReadings: entryFromReadings,

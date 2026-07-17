@@ -11,14 +11,18 @@
   <body>
     <header class="header">
       <img class="logo" src="../icons/icon.svg" alt="" width="24" height="24">
-      <h1 class="title" data-i18n="alertTitle">Usage alert</h1>
+      <h1 class="title" id="title" data-i18n="alertTitle">Usage alert</h1>
     </header>
 
     <ul class="meters" id="meters"></ul>
 
     <footer class="footer">
       <span class="countdown" id="countdown"></span>
-      <button type="button" id="close" data-i18n="alertClose">Close</button>
+      <div class="footer-buttons">
+        <button type="button" id="keep-open" data-i18n="alertKeepOpen">Keep open</button>
+        <button type="button" id="snooze" data-i18n="alertSnooze">Snooze 1 h</button>
+        <button type="button" id="close" data-i18n="alertClose">Close</button>
+      </div>
     </footer>
 
     <script src="alert.js"></script>

@@ -50,14 +50,59 @@
   "popupTest": {
     "message": "Tester l'alerte"
   },
-  "popupHint": {
-    "message": "Une alerte à chaque palier configuré. Durée à 0 pour garder la fenêtre ouverte."
+  "popupOptions": {
+    "message": "Réglages"
+  },
+  "popupApiWarning": {
+    "message": "La réponse de l'API Claude semble avoir changé ; les relevés peuvent être incomplets."
+  },
+  "popupSnoozedUntil": {
+    "message": "Alertes en sourdine jusqu'à $TIME$",
+    "placeholders": {
+      "time": { "content": "$1" }
+    }
+  },
+  "popupSnoozeCancel": {
+    "message": "Réactiver"
+  },
+  "popupJustNow": {
+    "message": "Actualisé à l'instant"
+  },
+  "popupLastReading": {
+    "message": "Actualisé il y a $AGO$",
+    "placeholders": {
+      "ago": { "content": "$1" }
+    }
+  },
+  "popupPollFailed": {
+    "message": "Dernier relevé impossible. Êtes-vous connecté à claude.ai ?"
   },
   "optionsStepLabel": {
     "message": "Palier d'alerte"
   },
   "optionsStepHint": {
     "message": "Une alerte se déclenche à chaque franchissement de ce pourcentage."
+  },
+  "optionsDurationHint": {
+    "message": "Durée à 0 pour garder la fenêtre d'alerte ouverte."
+  },
+  "optionsVolumeLabel": {
+    "message": "Volume"
+  },
+  "optionsMetersLabel": {
+    "message": "Alerter sur ces compteurs"
+  },
+  "optionsMetersHint": {
+    "message": "Les compteurs décochés ne déclenchent jamais d'alerte. Ils apparaissent après le premier relevé."
+  },
+  "optionsOrgLabel": {
+    "message": "Organisation"
+  },
+  "optionsOrgAuto": {
+    "message": "Automatique"
+  },
+  "optionsOrgHint": {
+    "message": "L'organisation Claude à surveiller."
   },
   "popupDurationLabel": {
     "message": "Durée de l'alerte (s)"
@@ -94,5 +139,17 @@
   },
   "alertPersistent": {
     "message": "Reste ouverte jusqu'à la prochaine alerte"
+  },
+  "alertKeepOpen": {
+    "message": "Garder ouverte"
+  },
+  "alertPinned": {
+    "message": "Reste ouverte jusqu'à fermeture manuelle"
+  },
+  "alertSnooze": {
+    "message": "Silence 1 h"
+  },
+  "alertResetTitle": {
+    "message": "Limite réinitialisée"
   }
 }

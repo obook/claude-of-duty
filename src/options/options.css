@@ -2,7 +2,7 @@
  * options.css
  * Styling for the preferences page. Follows the viewer's light or dark theme.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
@@ -61,10 +61,73 @@ body {
 }
 
 .settings {
+  margin-bottom: 10px;
   padding: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.row + .row {
+  margin-top: 8px;
+}
+
+.row-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.duration-input {
+  width: 76px;
+  flex-shrink: 0;
+  padding: 6px 8px;
+  font: inherit;
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.duration-input:focus,
+.sound-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.sound-select {
+  flex-shrink: 0;
+  max-width: 180px;
+  padding: 6px 8px;
+  font: inherit;
+  color: var(--text);
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.volume-control {
+  flex: 1;
+  max-width: 180px;
+}
+
+.meter-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meter-list input {
+  accent-color: var(--accent);
 }
 
 .step-label {
@@ -86,8 +149,9 @@ body {
 }
 
 .step-output {
-  min-width: 32px;
+  min-width: 44px;
   text-align: right;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
   color: var(--accent);
   font-weight: 600;

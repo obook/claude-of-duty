@@ -13,7 +13,7 @@
  *
  * The public entry point is window.ClaudeOfDuty.usageApi.fetchUsageReadings().
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
@@ -23,6 +23,8 @@
   const ORGANIZATIONS_PATH = "/api/organizations";
   const CLAUDE_TABS_QUERY = { url: "https://claude.ai/*" };
   const JSON_HEADERS = { accept: "application/json" };
+  const ORGANIZATION_KEY = "organizationId";
+  const API_WARNING_KEY = "apiWarning";
 
   /* Path of the usage endpoint for a given organization. */
   function usagePath(organizationId) {
@@ -136,21 +138,60 @@
     return readings;
   }
 
+  /*
+   * True when a usage payload no longer looks the way we expect: no "limits"
+   * array at all, or limits that none of our known kinds could parse. The
+   * popup shows a warning banner while this is the case.
+   */
+  function usageLooksUnexpected(usage, readings) {
+    if (!usage || !Array.isArray(usage.limits)) {
+      return true;
+    }
+    return usage.limits.length > 0 && readings.length === 0;
+  }
+
+  /* Lists the account's organizations, for the preferences page. */
+  async function listOrganizations() {
+    const organizations = await fetchJson(ORGANIZATIONS_PATH);
+    if (!Array.isArray(organizations)) {
+      return [];
+    }
+    return organizations
+      .filter((org) => org && org.uuid)
+      .map((org) => ({ id: org.uuid, name: org.name || org.uuid }));
+  }
+
   /* Remembered between polls to avoid re-listing organizations every time. */
   let cachedOrganizationId = null;
 
-  /* Fetches and parses the current usage meters. */
-  async function fetchUsageReadings() {
+  /*
+   * Organization to poll: the one chosen in the preferences page when set,
+   * otherwise the auto-picked (and cached) consumer organization.
+   */
+  async function resolveOrganizationId() {
+    const stored = await browser.storage.local.get(ORGANIZATION_KEY);
+    const chosen = stored[ORGANIZATION_KEY];
+    if (typeof chosen === "string" && chosen !== "") {
+      return chosen;
+    }
     if (!cachedOrganizationId) {
       const organizations = await fetchJson(ORGANIZATIONS_PATH);
       cachedOrganizationId = pickOrganizationId(organizations);
     }
-    if (!cachedOrganizationId) {
+    return cachedOrganizationId;
+  }
+
+  /* Fetches and parses the current usage meters. */
+  async function fetchUsageReadings() {
+    const organizationId = await resolveOrganizationId();
+    if (!organizationId) {
       throw new Error("No organization found");
     }
     try {
-      const usage = await fetchJson(usagePath(cachedOrganizationId));
-      return readingsFromUsage(usage);
+      const usage = await fetchJson(usagePath(organizationId));
+      const readings = readingsFromUsage(usage);
+      browser.storage.local.set({ [API_WARNING_KEY]: usageLooksUnexpected(usage, readings) });
+      return readings;
     } catch (error) {
       // The cached organization may be stale: force a re-discovery next time.
       cachedOrganizationId = null;
@@ -161,8 +202,10 @@
   window.ClaudeOfDuty = window.ClaudeOfDuty || {};
   window.ClaudeOfDuty.usageApi = {
     fetchUsageReadings: fetchUsageReadings,
+    listOrganizations: listOrganizations,
     // Exposed so the unit tests can exercise the pure parsing helpers.
     readingsFromUsage: readingsFromUsage,
-    meterFromLimit: meterFromLimit
+    meterFromLimit: meterFromLimit,
+    usageLooksUnexpected: usageLooksUnexpected
   };
 })();

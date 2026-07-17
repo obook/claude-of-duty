@@ -1,38 +1,38 @@
 /*
  * popup.js
- * Fills the toolbar popup from stored readings and wires its two buttons.
+ * Fills the toolbar popup from stored readings and wires its buttons.
  *
- * The background page writes the latest readings to storage; here we only read
- * and display them, refresh live on storage changes, and let the user force a
- * refresh or replay the readings as test notifications.
+ * The background page writes the latest readings, poll timestamps, and
+ * warning flags to storage; here we only read and display them, refresh live
+ * on storage changes, and let the user force a refresh, replay the readings
+ * as a test alert, or open the preferences page. The status area shows data
+ * freshness, a running snooze (with a button to end it early), and a banner
+ * when the usage API stops looking as expected. The 7-day chart itself is
+ * drawn by chart.js.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
 
 const READINGS_KEY = "readings";
-const DURATION_KEY = "alertDurationSeconds";
-const SOUND_KEY = "soundChoice";
 const HISTORY_KEY = "usageHistory";
 const ALERT_STEP_KEY = "alertStep";
-const DEFAULT_DURATION = 20;
-const MIN_DURATION = 0; // 0 keeps the alert window open until the next alert
-const MAX_DURATION = 300;
-const DEFAULT_ALERT_STEP = 5;
+const LAST_POLL_KEY = "lastPoll";
+const SNOOZE_KEY = "snoozeUntil";
+const API_WARNING_KEY = "apiWarning";
 
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-const CHART_WIDTH = 300;
-const CHART_PLOT_HEIGHT = 48;
-const CHART_LABEL_HEIGHT = 12;
-const CHART_HEIGHT = CHART_PLOT_HEIGHT + CHART_LABEL_HEIGHT;
-const CHART_MIN_POINTS = 2;
+const STATUS_REFRESH_MS = 30 * 1000;
 
 /* Preferred display order; any scoped-model meters are appended after these. */
 const METER_ORDER = ["session", "weekly-all"];
 
 const metersList = document.getElementById("meters");
 const emptyItem = document.getElementById("empty");
+const apiWarningEl = document.getElementById("api-warning");
+const snoozeStatusEl = document.getElementById("snooze-status");
+const snoozeTextEl = document.getElementById("snooze-text");
+const freshnessEl = document.getElementById("freshness");
 
 /* Builds one meter row element from a stored reading. */
 function buildMeterRow(key, reading) {
@@ -85,101 +85,6 @@ function orderedKeys(readings) {
   return known.concat(extra);
 }
 
-// ===============================================================
-//  7-DAY CHART
-// ===============================================================
-
-const SVG_NS = "http://www.w3.org/2000/svg";
-const chartContainer = document.getElementById("history-chart");
-
-/* Creates one namespaced SVG element with the given attributes. */
-function createSvgElement(tagName, attributes) {
-  const element = document.createElementNS(SVG_NS, tagName);
-  for (const name of Object.keys(attributes)) {
-    element.setAttribute(name, attributes[name]);
-  }
-  return element;
-}
-
-/* "x,y" pairs for the session percentage polyline, over a 7-day window. */
-function chartPoints(history, windowStart) {
-  return history
-    .filter((entry) => typeof entry.session === "number")
-    .map((entry) => {
-      const x = ((entry.ts - windowStart) / SEVEN_DAYS_MS) * CHART_WIDTH;
-      const clampedPercent = Math.max(0, Math.min(100, entry.session));
-      const y = CHART_PLOT_HEIGHT - (clampedPercent / 100) * CHART_PLOT_HEIGHT;
-      return x.toFixed(1) + "," + y.toFixed(1);
-    });
-}
-
-/* Weekday-abbreviation labels for the 7 days ending today. */
-function chartDayLabels(now) {
-  const labels = [];
-  for (let daysAgo = 6; daysAgo >= 0; daysAgo -= 1) {
-    const date = new Date(now - daysAgo * 24 * 60 * 60 * 1000);
-    labels.push(date.toLocaleDateString(undefined, { weekday: "short" }));
-  }
-  return labels;
-}
-
-/* Builds the chart's SVG element: the session line, its threshold, and days. */
-function buildChartSvg(points, thresholdPercent, dayLabels) {
-  const svg = createSvgElement("svg", {
-    viewBox: "0 0 " + CHART_WIDTH + " " + CHART_HEIGHT,
-    width: "100%",
-    height: String(CHART_HEIGHT)
-  });
-
-  const thresholdY = (CHART_PLOT_HEIGHT - (thresholdPercent / 100) * CHART_PLOT_HEIGHT).toFixed(1);
-  svg.appendChild(createSvgElement("line", {
-    class: "chart-threshold",
-    x1: "0",
-    y1: thresholdY,
-    x2: String(CHART_WIDTH),
-    y2: thresholdY
-  }));
-
-  svg.appendChild(createSvgElement("polyline", {
-    class: "chart-line",
-    points: points.join(" ")
-  }));
-
-  const dayWidth = CHART_WIDTH / dayLabels.length;
-  for (let index = 0; index < dayLabels.length; index += 1) {
-    const x = ((index + 0.5) * dayWidth).toFixed(1);
-    const dayText = createSvgElement("text", {
-      class: "chart-day",
-      x: x,
-      y: String(CHART_HEIGHT),
-      "text-anchor": "middle"
-    });
-    dayText.textContent = dayLabels[index];
-    svg.appendChild(dayText);
-  }
-
-  return svg;
-}
-
-/* Redraws the 7-day session usage chart, or hides it with too little data. */
-async function renderChart() {
-  const stored = await browser.storage.local.get([HISTORY_KEY, ALERT_STEP_KEY]);
-  const history = Array.isArray(stored[HISTORY_KEY]) ? stored[HISTORY_KEY] : [];
-  const alertStep = typeof stored[ALERT_STEP_KEY] === "number" ? stored[ALERT_STEP_KEY] : DEFAULT_ALERT_STEP;
-
-  const now = Date.now();
-  const points = chartPoints(history, now - SEVEN_DAYS_MS);
-
-  chartContainer.innerHTML = "";
-  if (points.length < CHART_MIN_POINTS) {
-    chartContainer.hidden = true;
-    return;
-  }
-
-  chartContainer.hidden = false;
-  chartContainer.appendChild(buildChartSvg(points, alertStep, chartDayLabels(now)));
-}
-
 /* Redraws the whole list from the stored readings. */
 async function render() {
   const stored = await browser.storage.local.get(READINGS_KEY);
@@ -196,6 +101,61 @@ async function render() {
   }
 }
 
+// ===============================================================
+//  STATUS AREA
+// ===============================================================
+
+/* Short age of the last reading ("3 min", "1 h 05 min"), null under 1 min. */
+function ageText(ageMs) {
+  const minutes = Math.floor(ageMs / 60000);
+  if (minutes < 1) {
+    return null;
+  }
+  if (minutes < 60) {
+    return minutes + " min";
+  }
+  return Math.floor(minutes / 60) + " h " + String(minutes % 60).padStart(2, "0") + " min";
+}
+
+/* Redraws the freshness line, the snooze status, and the API warning. */
+async function renderStatus() {
+  const stored = await browser.storage.local.get([LAST_POLL_KEY, SNOOZE_KEY, API_WARNING_KEY]);
+
+  // Only show the API-change banner alongside a successful check: once polls
+  // start failing, apiWarning stops being refreshed and would otherwise show
+  // a stale, contradictory message next to "Last check failed".
+  const lastPollOk = Boolean(stored[LAST_POLL_KEY] && stored[LAST_POLL_KEY].ok);
+  apiWarningEl.hidden = !(stored[API_WARNING_KEY] === true && lastPollOk);
+
+  const snoozeUntil = stored[SNOOZE_KEY];
+  const snoozed = typeof snoozeUntil === "number" && Date.now() < snoozeUntil;
+  snoozeStatusEl.hidden = !snoozed;
+  if (snoozed) {
+    const time = new Date(snoozeUntil).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    snoozeTextEl.textContent = browser.i18n.getMessage("popupSnoozedUntil", [time]);
+  }
+
+  const lastPoll = stored[LAST_POLL_KEY];
+  if (!lastPoll || typeof lastPoll.ts !== "number") {
+    freshnessEl.textContent = "";
+    return;
+  }
+  if (!lastPoll.ok) {
+    freshnessEl.classList.add("stale");
+    freshnessEl.textContent = browser.i18n.getMessage("popupPollFailed");
+    return;
+  }
+  freshnessEl.classList.remove("stale");
+  const age = ageText(Date.now() - lastPoll.ts);
+  freshnessEl.textContent = age === null
+    ? browser.i18n.getMessage("popupJustNow")
+    : browser.i18n.getMessage("popupLastReading", [age]);
+}
+
+// ===============================================================
+//  BUTTONS AND LIVE REFRESH
+// ===============================================================
+
 document.getElementById("refresh").addEventListener("click", () => {
   browser.runtime.sendMessage({ command: "refresh" });
 });
@@ -204,56 +164,14 @@ document.getElementById("test").addEventListener("click", () => {
   browser.runtime.sendMessage({ command: "test" });
 });
 
-const durationInput = document.getElementById("duration");
+document.getElementById("options").addEventListener("click", () => {
+  browser.runtime.openOptionsPage();
+});
 
-/* Loads the saved alert duration, then saves it back on every change. */
-async function initDuration() {
-  const stored = await browser.storage.local.get(DURATION_KEY);
-  const value = typeof stored[DURATION_KEY] === "number" ? stored[DURATION_KEY] : DEFAULT_DURATION;
-  durationInput.value = value;
-
-  durationInput.addEventListener("change", () => {
-    let seconds = parseInt(durationInput.value, 10);
-    if (!Number.isFinite(seconds)) {
-      seconds = DEFAULT_DURATION;
-    }
-    seconds = Math.max(MIN_DURATION, Math.min(MAX_DURATION, seconds));
-    durationInput.value = seconds;
-    browser.storage.local.set({ [DURATION_KEY]: seconds });
-  });
-}
-
-const soundSelect = document.getElementById("sound");
-const SOUND_FILES = {
-  bell: "sounds/bell.mp3",
-  ding: "sounds/ding.mp3",
-  dong: "sounds/dong.mp3",
-  zingz: "sounds/zingz.mp3"
-};
-
-/* Plays a short preview of a sound choice ("none" plays nothing). */
-function previewSound(choice) {
-  const file = SOUND_FILES[choice];
-  if (!file) {
-    return;
-  }
-  try {
-    new Audio(browser.runtime.getURL(file)).play().catch(() => {});
-  } catch (error) {
-    /* Ignore preview playback errors. */
-  }
-}
-
-/* Loads the sound choice, saves it on change, and previews the new choice. */
-async function initSound() {
-  const stored = await browser.storage.local.get(SOUND_KEY);
-  soundSelect.value = stored[SOUND_KEY] || "none";
-
-  soundSelect.addEventListener("change", () => {
-    browser.storage.local.set({ [SOUND_KEY]: soundSelect.value });
-    previewSound(soundSelect.value);
-  });
-}
+// Ends the snooze early; the storage change redraws the status area.
+document.getElementById("snooze-cancel").addEventListener("click", () => {
+  browser.storage.local.remove(SNOOZE_KEY);
+});
 
 /* Replaces the text of every [data-i18n] element with its localized message. */
 function applyTranslations() {
@@ -275,12 +193,17 @@ browser.storage.onChanged.addListener((changes, area) => {
     render();
   }
   if (changes[HISTORY_KEY] || changes[ALERT_STEP_KEY]) {
-    renderChart();
+    window.ClaudeOfDuty.chart.render();
+  }
+  if (changes[LAST_POLL_KEY] || changes[SNOOZE_KEY] || changes[API_WARNING_KEY]) {
+    renderStatus();
   }
 });
 
+// The freshness line ages even without a storage change.
+setInterval(renderStatus, STATUS_REFRESH_MS);
+
 applyTranslations();
 render();
-renderChart();
-initDuration();
-initSound();
+renderStatus();
+window.ClaudeOfDuty.chart.render();

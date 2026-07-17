@@ -50,14 +50,59 @@
   "popupTest": {
     "message": "Test alert"
   },
-  "popupHint": {
-    "message": "Alerts fire at every configured step. Set the duration to 0 to keep the window open."
+  "popupOptions": {
+    "message": "Settings"
+  },
+  "popupApiWarning": {
+    "message": "The Claude API response looks different; readings may be incomplete."
+  },
+  "popupSnoozedUntil": {
+    "message": "Alerts snoozed until $TIME$",
+    "placeholders": {
+      "time": { "content": "$1" }
+    }
+  },
+  "popupSnoozeCancel": {
+    "message": "Resume"
+  },
+  "popupJustNow": {
+    "message": "Updated just now"
+  },
+  "popupLastReading": {
+    "message": "Updated $AGO$ ago",
+    "placeholders": {
+      "ago": { "content": "$1" }
+    }
+  },
+  "popupPollFailed": {
+    "message": "Last check failed. Are you signed in to claude.ai?"
   },
   "optionsStepLabel": {
     "message": "Alert step"
   },
   "optionsStepHint": {
     "message": "Alerts fire every time usage crosses this percentage."
+  },
+  "optionsDurationHint": {
+    "message": "Set the duration to 0 to keep the alert window open."
+  },
+  "optionsVolumeLabel": {
+    "message": "Volume"
+  },
+  "optionsMetersLabel": {
+    "message": "Alert on these meters"
+  },
+  "optionsMetersHint": {
+    "message": "Unchecked meters never trigger alerts. Meters appear after the first reading."
+  },
+  "optionsOrgLabel": {
+    "message": "Organization"
+  },
+  "optionsOrgAuto": {
+    "message": "Automatic"
+  },
+  "optionsOrgHint": {
+    "message": "Which Claude organization to watch."
   },
   "popupDurationLabel": {
     "message": "Alert duration (s)"
@@ -94,5 +139,17 @@
   },
   "alertPersistent": {
     "message": "Stays open until the next alert"
+  },
+  "alertKeepOpen": {
+    "message": "Keep open"
+  },
+  "alertPinned": {
+    "message": "Stays open until you close it"
+  },
+  "alertSnooze": {
+    "message": "Snooze 1 h"
+  },
+  "alertResetTitle": {
+    "message": "Limit reset"
   }
 }
