@@ -26,6 +26,7 @@ function getMessage(key, substitutions) {
     resetIn: "Resets in " + first,
     resetAt: "Resets " + first,
     trendOnTrack: "On track for reset.",
+    trendLimitReached: "Limit reached.",
     trendLimitIn: "At this rate: limit in ~" + first + "h"
   };
   return Object.prototype.hasOwnProperty.call(messages, key) ? messages[key] : key;

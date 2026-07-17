@@ -47,4 +47,23 @@ assert.strictEqual(
   "At this rate: limit in ~7h"
 );
 
+// Already at 100%: show "Limit reached." regardless of the projection, since
+// a minimum-1h floor would otherwise understate how close usage already is.
+assert.strictEqual(
+  monitor.formatTrend({ key: "session", percent: 100, resetsAt: resetLater }, climbingHistory),
+  "Limit reached."
+);
+
+// Not yet at 100%, but the projection lands under 30 minutes out: still
+// "Limit reached.", not a misleading "~1h".
+const almostThereHistory = [
+  { ts: now - 2 * HOUR_MS, session: 10 },
+  { ts: now - HOUR_MS, session: 55 },
+  { ts: now, session: 99 }
+];
+assert.strictEqual(
+  monitor.formatTrend({ key: "session", percent: 99, resetsAt: resetLater }, almostThereHistory),
+  "Limit reached."
+);
+
 console.log("ok - formatTrend");

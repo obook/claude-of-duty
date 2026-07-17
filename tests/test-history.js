@@ -92,4 +92,18 @@ assert.strictEqual(history.millisecondsUntilLimit(climbing, "session"), 7 * ONE_
 // A key absent from every entry has no data points to project from.
 assert.strictEqual(history.millisecondsUntilLimit(climbing, "weekly-all"), null);
 
+// A reset inside the window: only the new cycle's climb is fitted. The
+// previous cycle (70-90%) must not flatten the post-reset slope of 20 points
+// per hour, which reaches 100% five hours after the reset, i.e. 3 hours
+// after the last reading.
+const resetThenClimb = [
+  { ts: 0, session: 70 },
+  { ts: ONE_HOUR_MS, session: 80 },
+  { ts: 2 * ONE_HOUR_MS, session: 90 },
+  { ts: 3 * ONE_HOUR_MS, session: 0 },
+  { ts: 4 * ONE_HOUR_MS, session: 20 },
+  { ts: 5 * ONE_HOUR_MS, session: 40 }
+];
+assert.strictEqual(history.millisecondsUntilLimit(resetThenClimb, "session"), 3 * ONE_HOUR_MS);
+
 console.log("ok - history pruning, entry building, and linear projection");

@@ -41,6 +41,9 @@
   "trendOnTrack": {
     "message": "On track for reset."
   },
+  "trendLimitReached": {
+    "message": "Limit reached."
+  },
   "popupEmpty": {
     "message": "No reading yet. Open Claude, then refresh."
   },

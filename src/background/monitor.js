@@ -116,11 +116,15 @@
   }
 
   /*
-   * Localized trend line for the popup ("At this rate: limit in ~3h" or "On
-   * track for reset."), or "" when there is no projection to show yet (see
-   * history.js) or no reset time to compare it against.
+   * Localized trend line for the popup ("At this rate: limit in ~3h", "On
+   * track for reset.", or "Limit reached." once the meter is already at
+   * 100%), or "" when there is no projection to show yet (see history.js) or
+   * no reset time to compare it against.
    */
   function formatTrend(reading, history) {
+    if (reading.percent >= 100) {
+      return browser.i18n.getMessage("trendLimitReached");
+    }
     const projectedMs = window.ClaudeOfDuty.history.millisecondsUntilLimit(history, reading.key);
     if (projectedMs === null || !reading.resetsAt) {
       return "";
@@ -129,7 +133,12 @@
     if (projectedMs > remainingToResetMs) {
       return browser.i18n.getMessage("trendOnTrack");
     }
-    const hours = Math.max(1, Math.round(projectedMs / (60 * 60 * 1000)));
+    // The projection already rounds down to under 30 minutes: showing "~1h"
+    // here would understate how close the meter already is to the limit.
+    if (projectedMs < 30 * 60 * 1000) {
+      return browser.i18n.getMessage("trendLimitReached");
+    }
+    const hours = Math.round(projectedMs / (60 * 60 * 1000));
     return browser.i18n.getMessage("trendLimitIn", [String(hours)]);
   }
 

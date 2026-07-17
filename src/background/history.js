@@ -63,9 +63,20 @@
    * projected time until that point, in milliseconds, or null when there are
    * fewer than MIN_POINTS_FOR_PROJECTION points or the fitted slope is not
    * strictly positive (flat or decreasing usage).
+   *
+   * A drop between two consecutive points is a limit reset: only the points
+   * after the most recent drop are fitted. Mixing the previous cycle's climb
+   * into the fit would flatten the slope and understate the real pace.
    */
   function millisecondsUntilLimit(history, key) {
-    const points = history.filter((entry) => typeof entry[key] === "number").slice(-PROJECTION_WINDOW);
+    const series = history.filter((entry) => typeof entry[key] === "number");
+    let cycleStart = 0;
+    for (let index = 1; index < series.length; index += 1) {
+      if (series[index][key] < series[index - 1][key]) {
+        cycleStart = index;
+      }
+    }
+    const points = series.slice(cycleStart).slice(-PROJECTION_WINDOW);
     if (points.length < MIN_POINTS_FOR_PROJECTION) {
       return null;
     }

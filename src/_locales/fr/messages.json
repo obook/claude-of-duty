@@ -39,7 +39,10 @@
     }
   },
   "trendOnTrack": {
-    "message": "Rythme compatible avec la réinitialisation."
+    "message": "À ce rythme : limite non atteinte avant la réinitialisation."
+  },
+  "trendLimitReached": {
+    "message": "Limite atteinte."
   },
   "popupEmpty": {
     "message": "Aucune donnée pour l'instant. Ouvrez Claude, puis actualisez."
