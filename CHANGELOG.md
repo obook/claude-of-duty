@@ -5,6 +5,14 @@ All notable changes to Claude of Duty are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-07-17
+
+### Fixed
+
+- The popup could go stale while kept open: meters and the chart only
+  redrew on a storage change event, with no fallback if one was missed.
+  They now also refresh on the existing 30-second timer.
+
 ## [1.2.0] - 2026-07-17
 
 ### Added
