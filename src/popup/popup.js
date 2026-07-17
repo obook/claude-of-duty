@@ -200,8 +200,16 @@ browser.storage.onChanged.addListener((changes, area) => {
   }
 });
 
-// The freshness line ages even without a storage change.
-setInterval(renderStatus, STATUS_REFRESH_MS);
+// Belt and suspenders: a popup kept open for a long time relies on
+// storage.onChanged to stay live, but a missed or coalesced event would
+// otherwise leave it showing stale meters with no way to notice. Re-pulling
+// everything from storage on the same timer as the freshness line costs one
+// storage read and keeps the popup self-correcting either way.
+setInterval(() => {
+  render();
+  renderStatus();
+  window.ClaudeOfDuty.chart.render();
+}, STATUS_REFRESH_MS);
 
 applyTranslations();
 render();
