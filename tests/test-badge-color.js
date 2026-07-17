@@ -2,7 +2,7 @@
  * test-badge-color.js
  * Checks the green / orange / red badge color thresholds.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

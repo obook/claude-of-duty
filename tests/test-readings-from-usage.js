@@ -3,7 +3,7 @@
  * Checks parsing of a real usage payload into meters, that a missing Fable
  * limit degrades gracefully, and that the schema guards warn on odd responses.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

@@ -3,7 +3,7 @@
  * Checks the trend line: hidden with no projection or no reset time, "on
  * track" when the reset comes first, a duration otherwise.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

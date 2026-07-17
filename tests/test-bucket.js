@@ -3,7 +3,7 @@
  * Checks the bucket logic (default and configured steps) and the percentage
  * formatting.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

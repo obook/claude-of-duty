@@ -3,7 +3,7 @@
  * Checks how a raw "limit" entry maps to a watched meter, including the
  * scoped-model cases (Fable now, another model later, or none).
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

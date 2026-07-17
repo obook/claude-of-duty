@@ -6,7 +6,7 @@
 #
 # Usage: ./run-all.sh
 #
-# Author: øbook
+# Author: Olivier Booklage
 # Licence: MIT
 #
 set -u

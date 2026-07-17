@@ -7,7 +7,7 @@
  * request is genuinely same-origin and carries the right cookies and origin.
  * This file never reads the DOM; it only forwards a fetch.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

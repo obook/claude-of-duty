@@ -2,7 +2,7 @@
  * test-history.js
  * Checks history pruning, entry building, and the linear projection.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */

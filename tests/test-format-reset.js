@@ -3,7 +3,7 @@
  * Checks the reset formatting: empty for no date, a remaining time within a
  * day, and a weekday label further out.
  *
- * Author: øbook
+ * Author: Olivier Booklage
  * Date: July 2026
  * Licence: MIT
  */
