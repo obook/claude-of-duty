@@ -5,7 +5,70 @@ All notable changes to Claude of Duty are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2026-07-17
+
+### Added
+
+- "Keep open" button in the alert window: cancels the countdown so the window
+  stays until closed by hand, even when new alerts arrive (they still update
+  the meters, play the sound, and take focus).
+- "Snooze 1 h" button in the alert window: silences alerts for an hour and
+  closes the window. The popup shows the running snooze with a button to end
+  it early.
+- Data freshness in the popup: an "Updated X min ago" line, and a clear
+  failure message when the last check did not go through. A failed poll now
+  shows a gray "?" badge instead of silently clearing it.
+- Adaptive polling: the usage is checked every minute (instead of every
+  5 minutes) once any meter reaches 80%.
+- Dedicated "Limit reset" alert title when meters cross a step downward,
+  instead of presenting a reset like a usage alert.
+- Tooltip on the toolbar button listing every meter with its percentage and
+  trend.
+- Alert sound volume slider.
+- Per-meter alert filter: unchecked meters never trigger alerts.
+- The 7-day chart now plots every meter (not only the session) with a legend.
+- Organization picker for accounts that belong to several Claude
+  organizations. Defaults to automatic detection.
+- Warning banner in the popup when the usage API response stops looking as
+  expected (previously only logged to the console).
+
+### Changed
+
+- All settings now live in the preferences page (alert step, duration, sound,
+  volume, meter filter, organization); the popup gains a "Settings" button in
+  their place.
+
+### Fixed
+
+- The linear usage trend no longer blends readings from before and after a
+  limit reset, which used to understate how fast usage was climbing right
+  after a reset.
+- The trend line no longer floors its projection at "~1h": once a meter is at
+  or effectively at 100%, it now says "Limit reached." instead.
+- The alert step and volume percentage outputs in the preferences page no
+  longer wrap onto two lines at 100%.
+- The popup's API-warning banner and snooze status rows are now properly
+  hidden when inactive (an added CSS rule was silently overriding the
+  `hidden` attribute).
+- Switching organization now resets the alert buckets and 7-day history, so
+  it no longer fires a false "Limit reset" alert or mixes two organizations'
+  data in the chart and trend.
+- The organization picker no longer silently reverts to "Automatic" (without
+  updating storage) when it cannot verify a stored choice while offline; it
+  now only clears the choice once the organization is confirmed gone.
+- Muting a meter that later disappears from the API response (and so is not
+  rendered as a checkbox) no longer gets silently unmuted next time another
+  meter is toggled.
+- A failure while reacting to a successful poll (e.g. opening the alert
+  window) no longer shows a misleading "Are you signed in?" message; only a
+  failure to fetch the usage does.
+- The fast, 1-minute polling period now backs off to the normal period as
+  soon as a poll fails, instead of retrying every minute indefinitely.
+- The alert window is now tall enough for its three footer buttons to wrap
+  onto a second row without clipping.
+- The 7-day chart legend now shows a readable label instead of the raw
+  internal key for a meter that dropped out of the latest reading, and its
+  ordering now matches the popup list and toolbar tooltip.
 
 ## [1.1.0] - 2026-07-16
 
@@ -62,6 +125,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Initial version.
 
-[Unreleased]: https://github.com/obook/claude-of-duty/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/obook/claude-of-duty/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/obook/claude-of-duty/releases/tag/v1.2.0
 [1.1.0]: https://github.com/obook/claude-of-duty/releases/tag/v1.1.0
 [1.0.1]: https://github.com/obook/claude-of-duty/releases/tag/v1.0.1

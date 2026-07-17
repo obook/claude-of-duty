@@ -17,18 +17,22 @@ It monitors three limits, triggering a notification each time the alert step is 
 - All models: the weekly limit across all models (reset time shown in days).
 - Scoped model: the weekly limit for the model currently subject to one, labelled with that model's own name. If the model changes, the label updates automatically.
 
-The alert step defaults to 5% and can be changed to 10% or 25% from the extension's preferences page (right-click the toolbar icon, then "Manage Extension" > "Preferences", or `about:addons`). When any limit crosses a step, the alert window opens showing all three limits together, not just the one that changed.
+The alert step defaults to 5% and can be changed to 10% or 25% from the extension's preferences page (right-click the toolbar icon, then "Manage Extension" > "Preferences", or `about:addons`). When any limit crosses a step, the alert window opens showing all three limits together, not just the one that changed. A downward crossing (the limit reset) uses its own "Limit reset" title. Meters you uncheck in the preferences never trigger alerts.
+
+The alert window offers three buttons: "Keep open" cancels its countdown so it stays until closed by hand, "Snooze 1 h" silences alerts for an hour, and "Close" dismisses it. All other settings live in the preferences page too: alert duration, sound and volume, the meter filter, and the organization to watch (automatic by default, useful for accounts in several Claude organizations).
 
 ## In the popup
 
 - Each meter shows a progress bar and its reset time. The current session row is visually highlighted, since it resets much sooner than the weekly ones.
 - Once there is enough history, a trend line below each meter shows either "On track for reset." or "At this rate: limit in ~Xh", from a simple linear projection of its recent readings.
-- A 7-day chart plots the session limit's history as a line, with a dashed line at the configured alert step.
-- The toolbar icon always shows the current session usage as a badge, colored green below 70%, orange from 70% to 89%, and red from 90% up.
+- A 7-day chart plots every meter's history as a colored line with a legend, plus a dashed line at the configured alert step.
+- An "Updated X min ago" line shows how fresh the readings are; if the last check failed, the popup says so and the badge turns into a gray "?".
+- While a snooze is running, the popup shows until when, with a button to end it early.
+- The toolbar icon always shows the current session usage as a badge, colored green below 70%, orange from 70% to 89%, and red from 90% up. Its tooltip lists every meter with its percentage and trend.
 
 ## How it works
 
-It calls the `GET /api/organizations/{id}/usage` endpoint of the claude.ai API using the session cookie (without actually accessing the cookie's contents). It automatically detects your organization via `/api/organizations`. It performs periodic checks in the background, upon browser startup, and on demand via the popup window.
+It calls the `GET /api/organizations/{id}/usage` endpoint of the claude.ai API using the session cookie (without actually accessing the cookie's contents). It automatically detects your organization via `/api/organizations`, unless you pick one in the preferences. It performs periodic checks in the background (every 5 minutes, tightening to every minute once a meter reaches 80%), upon browser startup, and on demand via the popup window.
 
 ## Install
 
@@ -111,8 +115,10 @@ Run the unit tests with Node, no dependencies needed:
 
 They cover the usage parsing, the meter mapping (including the scoped model),
 the reset formatting, the bucket logic (including a configured alert step),
-the badge color thresholds, and the history pruning, entry building, and
-linear projection behind the trend line. `readingsFromUsage` also warns in
+the badge color thresholds and tooltip, the alert decision helpers (crossing
+direction, alert kind, snooze, adaptive poll period), the usage API change
+guard, and the history pruning, entry building, and linear projection behind
+the trend line. `readingsFromUsage` also warns in
 the console if the API response stops looking the way it expects, which is the
 usual sign of an API change.
 
